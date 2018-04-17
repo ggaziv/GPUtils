@@ -1,0 +1,10 @@
+# General Purpose Utilities
+These are commonly used tools or functions that you put together which could benefit everyone.
+
+- utils1: Stand alone functions/objects that you can just import and run. If this file becomes too long please start a new one.
+
+- startup_guyga: This is a startup script that I use for any startup of IPython (Jupyter ntbk included).
+    It does some basic imports that make python environment more ready to use like MATLAB.
+
+Guy Gaziv
+guy.gaziv@weizmann.ac.il
