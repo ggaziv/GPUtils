@@ -27,9 +27,9 @@ def report(func, msg):
     '''
     def reported(*args, **kwargs):
         cprint(msg, 'magenta')
-        t1 = time.time()
+        t1 = time()
         res = func(*args, **kwargs)
-        cprint('Done in %s.' % get_sensible_duration(time.time()-t1), 'magenta')
+        cprint('Done in %s.' % get_sensible_duration(time()-t1), 'magenta')
         return res
     return reported
 
@@ -40,15 +40,14 @@ class ProgressMonitor:
         prog_mon = ProgressMonitor(<n_iter>)
         for i in range(<n_iter>):
             <do something>
-            print(prog_mon.get_progress_line(idx))
+            print(prog_mon.get_progress_line(i))
     '''
-
     def __init__(self, job_size):
-        self.start_time = time.time()
+        self.start_time = time()
         self.job_size = job_size
 
     def get_progress_data(self, idx):
-        elapsed_time = time.time() - self.start_time
+        elapsed_time = time() - self.start_time
         progress_rate = (idx + 1) / elapsed_time
         remaining_time_sec = (self.job_size - (idx + 1)) / progress_rate
         prog_percentage = 100.0 * (idx + 1) / self.job_size
@@ -138,9 +137,9 @@ def timeit(func):
         <func_output> = timeit(<func>)(<func_args>)
     '''
     def timed(*args, **kwargs):
-        t0 = time.time()
+        t0 = time()
         res = func(*args, **kwargs)
-        cprint('%s | %s' % (func.__name__, get_sensible_duration(time.time() - t0)), 'cyan')
+        cprint('%s | %s' % (func.__name__, get_sensible_duration(time() - t0)), 'cyan')
         return res
     return timed
 
