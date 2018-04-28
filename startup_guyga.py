@@ -30,3 +30,7 @@ from collections import OrderedDict
 from natsort import natsorted
 from importlib import reload
 import shutil, pickle
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+import h5py
+warnings.resetwarnings()
