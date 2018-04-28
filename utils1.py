@@ -147,6 +147,12 @@ def multi_panel_fig(panels, plot_funcs=None, post_plot_proc=None, titles=None,
                     x_labels=None, y_labels=None, xlims=None, ylims=None, figname=None, is_maximize=None):
     n_row = len(panels)
     n_col = len(panels[0])
+    if titles and isinstance(titles[0],(str,)):  # Title only for top panels
+        titles = [titles]
+    if y_labels and isinstance(y_labels[0],(str,)):  # Labels only for left panels
+        y_labels = [[lbl] + [None] * (n_col-1) for lbl in y_labels]
+    if x_labels and isinstance(x_labels[0],(str,)):  # Labels only for bottom panels
+        x_labels = [[None] * n_col for _ in range(n_row)] + [x_labels]
     fig = plt.figure()
     if figname:
         plt.suptitle(figname, fontsize=16)
@@ -160,12 +166,12 @@ def multi_panel_fig(panels, plot_funcs=None, post_plot_proc=None, titles=None,
                 else:
                     plt.imshow(panels[i][j])
                     plt.colorbar()
-                if x_labels:
-                    plt.xlabel(x_labels[i][j])
-                if y_labels:
-                    plt.ylabel(y_labels[i][j])
-                if titles:
-                    plt.title(titles[i][j])
+                if x_labels and x_labels[i][j] is not None:
+                    plt.xlabel(x_labels[i][j], fontsize=14)
+                if y_labels and y_labels[i][j] is not None:
+                    plt.ylabel(y_labels[i][j], fontsize=14)
+                if titles and i < len(titles):
+                    plt.title(titles[i][j], fontsize=14)
                 if xlims:
                     plt.xlim(xlims[i][j])
                 if ylims:
@@ -180,3 +186,8 @@ def multi_panel_fig(panels, plot_funcs=None, post_plot_proc=None, titles=None,
         plt.get_current_fig_manager().full_screen_toggle()
         # mng = plt.get_current_fig_manager()
         # mng.window.wm_geometry("1920x1080+0+0")
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
