@@ -22,6 +22,8 @@ from termcolor import cprint
 cprint1 = lambda s: cprint(s, 'cyan', attrs=['bold'])
 from sys import getsizeof
 from scipy.io import loadmat; loadmat = report(loadmat, 'Loading')
+from scipy.io import savemat; savemat = report(savemat, 'Saving')
+import scipy.misc as smisc
 from matplotlib import pyplot as plt
 load = report(load, 'Loading')
 from multiprocessing.dummy import Pool
@@ -34,3 +36,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
 warnings.resetwarnings()
+warnings.simplefilter("ignore", ResourceWarning)
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+warnings.filterwarnings("ignore",category=DeprecationWarning)
