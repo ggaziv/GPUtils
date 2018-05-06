@@ -5,7 +5,7 @@
     Python Version: 3.5
 """
 
-import os
+import os, shutil
 from tkinter import *
 from time import localtime, strftime, time
 from termcolor import cprint
@@ -179,7 +179,7 @@ def multi_panel_fig(panels, plot_funcs=None, post_plot_proc=None, titles=None,
                 if post_plot_proc:
                     post_plot_proc[i][j]()
             except Exception:
-                warn("Error with panel %d:%d" % (i,j))
+                warn("Error with panel %d:%d" % (i+1,j+1))
             panel_idx += 1
 
     if is_maximize:
@@ -191,3 +191,10 @@ def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+def silentremove(file_or_folder_name):
+    if os.path.exists(file_or_folder_name):
+        if os.path.isfile(file_or_folder_name):
+            os.remove(file_or_folder_name)
+        else:  # Folder
+            shutil.rmtree(file_or_folder_name)
