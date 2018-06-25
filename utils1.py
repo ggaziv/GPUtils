@@ -54,8 +54,11 @@ class ProgressMonitor:
         return prog_percentage, remaining_time_sec
 
     def get_progress_line(self, idx):
-        prog_percentage, remaining_time_sec = self.get_progress_data(idx)
-        return '%2.0f%% | ~%s remaining' % (prog_percentage, get_sensible_duration(remaining_time_sec))
+        if idx > 0:
+            prog_percentage, remaining_time_sec = self.get_progress_data(idx)
+            return '%2.0f%% | ~%s remaining' % (prog_percentage, get_sensible_duration(remaining_time_sec))
+        else:
+            return '0% | TBD'
 
 def get_sensible_duration(duration_sec):
     '''
