@@ -201,3 +201,13 @@ def silentremove(file_or_folder_name):
             os.remove(file_or_folder_name)
         else:  # Folder
             shutil.rmtree(file_or_folder_name)
+
+def my_basename(s, ext=False):
+    basename = os.path.basename(s)
+    return basename if ext else os.path.splitext(basename)[0]
+
+def my_print(x, color=None):
+    if not color:
+        color = 'blue'
+    cprint(x, 'blue')
+    return time()
