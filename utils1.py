@@ -14,6 +14,8 @@ import glob
 import numpy as np
 from matplotlib import pyplot as plt
 from warnings import warn
+from tensorflow.python.client import device_lib
+import itertools
 
 __author__ = "Guy Gaziv"
 __credits__ = ["Guy Gaziv"]
@@ -29,7 +31,7 @@ def report(func, msg):
         cprint(msg, 'magenta')
         t1 = time()
         res = func(*args, **kwargs)
-        cprint('Done in %s.' % get_sensible_duration(time()-t1), 'magenta')
+        cprint('Completed in %s.' % get_sensible_duration(time()-t1), 'magenta')
         return res
     return reported
 
@@ -211,3 +213,30 @@ def my_print(x, color=None):
         color = 'blue'
     cprint(x, 'blue')
     return time()
+
+def underscore_str(iterable_obj):
+    return '_'.join([str(x) for x in iterable_obj])
+
+def get_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return [int(x.name[-1]) for x in local_device_protos if x.device_type == 'GPU']
+
+def listify(value):
+    """ Ensures that the value is a list. If it is not a list, it creates a new list with `value` as an item. """
+    if not isinstance(value, list):
+        value = [value]
+    return value
+
+def flatten_dict(d):
+    def items():
+        for key, value in d.items():
+            if isinstance(value, dict):
+                for subkey, subvalue in flatten_dict(value).items():
+                    yield str(key) + "." + str(subkey), subvalue
+            else:
+                yield key, value
+
+    return dict(items())
+
+def create_colormap(N):
+    return list(itertools.product(np.linspace(0, .7, np.ceil(N ** (1/3))), repeat=3))

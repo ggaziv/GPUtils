@@ -25,6 +25,7 @@ from scipy.io import loadmat; loadmat = report(loadmat, 'Loading')
 from scipy.io import savemat; savemat = report(savemat, 'Saving')
 import scipy.misc as smisc
 from matplotlib import pyplot as plt
+plt.rcParams.update({'font.size': 14})
 load = report(load, 'Loading')
 from multiprocessing.dummy import Pool
 from tqdm import tqdm
@@ -32,6 +33,7 @@ from collections import OrderedDict
 from natsort import natsorted
 from importlib import reload
 import shutil, pickle
+import itertools
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
