@@ -217,9 +217,9 @@ def my_print(x, color=None):
 def underscore_str(iterable_obj):
     return '_'.join([str(x) for x in iterable_obj])
 
-def get_available_gpus():
-    local_device_protos = device_lib.list_local_devices()
-    return [int(x.name[-1]) for x in local_device_protos if x.device_type == 'GPU']
+# def get_available_gpus():
+#     local_device_protos = device_lib.list_local_devices()
+#     return [int(x.name[-1]) for x in local_device_protos if x.device_type == 'GPU']
 
 def listify(value):
     """ Ensures that the value is a list. If it is not a list, it creates a new list with `value` as an item. """
