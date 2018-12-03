@@ -14,7 +14,7 @@ import glob
 import numpy as np
 from matplotlib import pyplot as plt
 from warnings import warn
-from tensorflow.python.client import device_lib
+# from tensorflow.python.client import device_lib
 import itertools
 
 __author__ = "Guy Gaziv"
@@ -240,3 +240,6 @@ def flatten_dict(d):
 
 def create_colormap(N):
     return list(itertools.product(np.linspace(0, .7, np.ceil(N ** (1/3))), repeat=3))
+
+def easystack(l, stacking_func=np.stack):
+    return stacking_func([x for x in l if x is not None])
