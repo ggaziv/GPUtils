@@ -5,7 +5,7 @@
     Python Version: 3.5
 """
 
-import os, shutil
+import os, shutil, pickle
 from tkinter import *
 from time import localtime, strftime, time
 from termcolor import cprint
@@ -247,3 +247,8 @@ def easystack(l, stacking_func=np.stack):
         return stacking_func(l)
     else:
         return None
+
+def unpickle(file):
+    with open(file, 'rb') as fo:
+        dict = pickle.load(fo)
+    return dict
