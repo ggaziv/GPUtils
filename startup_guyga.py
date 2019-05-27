@@ -17,8 +17,9 @@ __email__ = "guy.gaziv@weizmann.ac.il"
 from pprint import pprint
 import sys, os, time
 from datetime import datetime
-from numpy import *
+from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median
 from GPUtils.utils1 import *
+import random
 from termcolor import cprint
 cprint1 = lambda s: cprint(s, 'cyan', attrs=['bold'])
 from sys import getsizeof

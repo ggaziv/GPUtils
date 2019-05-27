@@ -5,8 +5,8 @@
     Python Version: 3.5
 """
 
-import os, shutil, pickle
-from tkinter import *
+import os, shutil, pickle, sys
+from tkinter import Tk, Label, Entry
 from time import localtime, strftime, time
 from termcolor import cprint
 import logging
@@ -252,3 +252,8 @@ def unpickle(file):
     with open(file, 'rb') as fo:
         dict = pickle.load(fo)
     return dict
+
+def get_freer_gpu():
+    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
+    memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+    return np.argmax(memory_available), max(memory_available)
