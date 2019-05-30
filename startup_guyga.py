@@ -16,6 +16,7 @@ __email__ = "guy.gaziv@weizmann.ac.il"
 # print('>> Running startup script.')
 from pprint import pprint
 import sys, os, time
+from os.path import pjoin
 from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median
 from GPUtils.utils1 import *
@@ -28,7 +29,7 @@ from scipy.io import savemat; savemat = report(savemat, 'Saving')
 import scipy.misc as smisc
 from matplotlib import pyplot as plt
 plt.rcParams.update({'font.size': 14})
-load = report(load, 'Loading')
+# load = report(load, 'Loading')
 from multiprocessing.dummy import Pool
 from tqdm import tqdm
 from collections import OrderedDict
