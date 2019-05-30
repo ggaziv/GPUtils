@@ -15,12 +15,12 @@ __email__ = "guy.gaziv@weizmann.ac.il"
 
 # print('>> Running startup script.')
 from pprint import pprint
-import sys, os, time
+import sys, os
 from os.path import join as pjoin
 from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median
 from GPUtils.utils1 import *
-import random
+import random, time
 from termcolor import cprint
 cprint1 = lambda s: cprint(s, 'cyan', attrs=['bold'])
 from sys import getsizeof
