@@ -16,6 +16,8 @@ from matplotlib import pyplot as plt
 from warnings import warn
 # from tensorflow.python.client import device_lib
 import itertools
+import contextlib
+
 
 __author__ = "Guy Gaziv"
 __credits__ = ["Guy Gaziv"]
@@ -241,6 +243,31 @@ def flatten_dict(d):
 def create_colormap(N):
     return list(itertools.product(np.linspace(0, .7, np.ceil(N ** (1/3))), repeat=3))
 
+class PoolReported():
+    def __init__(self, n_threads):
+        from multiprocessing.dummy import Pool
+        self.pool = Pool(n_threads)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        #Exception handling here
+        self.pool.close()
+
+    def map(self, f1, arg_list):
+        from tqdm import tqdm
+        with tqdm(total=len(arg_list)) as pbar:
+            def f2(x):
+                y = f1(x)
+                pbar.update(1)
+                return y
+            return self.pool.map(f2, arg_list)
+
+def my_parse(ref_str, s, split_str='_'):
+    ref_str_split = ref_str.split(split_str)
+    return ref_str_split[ref_str_split.index(s) + 1]
+
 def easystack(l, stacking_func=np.stack):
     l = [x for x in l if x is not None]
     if len(l) > 0:
@@ -257,3 +284,7 @@ def get_freer_gpu():
     os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
     memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
     return np.argmax(memory_available), max(memory_available)
+
+@contextlib.contextmanager
+def dummy_context_mgr():
+    yield None
