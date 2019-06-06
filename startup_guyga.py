@@ -18,9 +18,10 @@ from pprint import pprint
 import sys, os
 from os.path import join as pjoin
 from datetime import datetime
-from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median
+from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median, linspace, prod
 from GPUtils.utils1 import *
 import random, time
+from numpy.random import randint, randn, random_sample
 from termcolor import cprint
 cprint1 = lambda s: cprint(s, 'cyan', attrs=['bold'])
 from sys import getsizeof
