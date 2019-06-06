@@ -38,6 +38,7 @@ from natsort import natsorted
 from importlib import reload
 import shutil, pickle
 import itertools
+from itertools import chain, permutations, combinations, product
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
