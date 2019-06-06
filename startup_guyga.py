@@ -42,6 +42,7 @@ from itertools import chain, permutations, combinations, product
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
+from PIL import Image
 warnings.resetwarnings()
 warnings.simplefilter("ignore", ResourceWarning)
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
