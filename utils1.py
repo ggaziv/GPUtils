@@ -288,3 +288,9 @@ def get_freer_gpu():
 @contextlib.contextmanager
 def dummy_context_mgr():
     yield None
+
+def hist_comparison_fig(dist_dict, bins):
+    for k, v in dist_dict.items():
+        plt.hist(v, bins, alpha=0.5, label=k)
+    plt.legend()
+    return plt.gcf()
