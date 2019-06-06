@@ -17,7 +17,7 @@ from warnings import warn
 # from tensorflow.python.client import device_lib
 import itertools
 import contextlib
-
+identity = lambda x: x
 
 __author__ = "Guy Gaziv"
 __credits__ = ["Guy Gaziv"]
