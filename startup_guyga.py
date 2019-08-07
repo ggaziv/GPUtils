@@ -16,19 +16,28 @@ __email__ = "guy.gaziv@weizmann.ac.il"
 # print('>> Running startup script.')
 from pprint import pprint
 import sys, os
-from os.path import join as pjoin
+from os.path import join as pjoin, exists as pexists, basename, isfile
 from datetime import datetime
-from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median, linspace, prod
+from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median, linspace, prod, arange, nanmean, nanmedian, round, zeros, ones
+import pandas as pd
 from GPUtils.utils1 import *
 import random, time
 from numpy.random import randint, randn, random_sample
 from termcolor import cprint
 cprint1 = lambda s: cprint(s, 'cyan', attrs=['bold'])
+cprintc = lambda s: cprint(s, 'cyan')
+cprintm = lambda s: cprint(s, 'magenta')
 from sys import getsizeof
+import scipy
+from scipy import io as sio
+from scipy import signal
 from scipy.io import loadmat; loadmat = report(loadmat, 'Loading')
 from scipy.io import savemat; savemat = report(savemat, 'Saving')
 import scipy.misc as smisc
+from scipy import stats
+from scipy.spatial import distance
 from matplotlib import pyplot as plt
+import seaborn as sns
 plt.rcParams.update({'font.size': 14})
 # load = report(load, 'Loading')
 from multiprocessing.dummy import Pool
@@ -43,6 +52,8 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
 from PIL import Image
+import nibabel as nib
+import zipfile
 warnings.resetwarnings()
 warnings.simplefilter("ignore", ResourceWarning)
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
