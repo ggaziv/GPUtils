@@ -5,7 +5,7 @@
     Python Version: 3.5
 """
 
-import os, shutil, pickle, sys
+import os, shutil, pickle, sys, random
 from tkinter import Tk, Label, Entry
 from time import localtime, strftime, time
 from termcolor import cprint
@@ -294,3 +294,10 @@ def hist_comparison_fig(dist_dict, bins, **flags):
         plt.hist(v, bins, alpha=0.5, label=k, **flags)
     plt.legend()
     return plt.gcf()
+
+def sample_array(a, axis=0, size=1, replace=False):
+    if replace:
+        indices = np.array(random.choices(range(a.shape[axis]), k=size))
+    else:
+        indices = np.array(random.sample(range(a.shape[axis]), k=size))
+    return np.take(a, indices, axis=axis)

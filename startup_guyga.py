@@ -18,7 +18,8 @@ from pprint import pprint
 import sys, os
 from os.path import join as pjoin, exists as pexists, basename, isfile
 from datetime import datetime
-from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median, linspace, prod, arange, nanmean, nanmedian, round, zeros, ones
+from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median, linspace, prod, arange, \
+    nanmean, nanmedian, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan
 import pandas as pd
 from GPUtils.utils1 import *
 import random, time
