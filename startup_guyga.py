@@ -18,8 +18,8 @@ from pprint import pprint
 import sys, os
 from os.path import join as pjoin, exists as pexists, basename, isfile
 from datetime import datetime
-from numpy import stack, vstack, dstack, hstack, array, load, inf, squeeze, mean, median, linspace, prod, arange, \
-    nanmean, nanmedian, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan
+from numpy import stack, vstack, dstack, hstack, array, load, save, inf, squeeze, mean, median, std, linspace, prod, arange, \
+    nanmean, nanmedian, nanstd, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan, ma, moveaxis
 import pandas as pd
 from GPUtils.utils1 import *
 import random, time
@@ -44,7 +44,7 @@ plt.rcParams.update({'font.size': 14})
 from multiprocessing.dummy import Pool
 from tqdm import tqdm
 from collections import OrderedDict
-from natsort import natsorted
+from natsort import natsorted, index_natsorted
 from importlib import reload
 import shutil, pickle
 import itertools

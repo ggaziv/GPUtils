@@ -240,6 +240,10 @@ def flatten_dict(d):
 
     return dict(items())
 
+def invert_dict(d):
+    ''' Including non-unique case '''
+    return {v:[k for k in d if d[k] == v] for v in d.values()}
+
 def create_colormap(N):
     return list(itertools.product(np.linspace(0, .7, np.ceil(N ** (1/3))), repeat=3))
 
@@ -296,6 +300,7 @@ def hist_comparison_fig(dist_dict, bins, **flags):
     return plt.gcf()
 
 def sample_array(a, axis=0, size=1, replace=False):
+    a = np.array(a)
     if replace:
         indices = np.array(random.choices(range(a.shape[axis]), k=size))
     else:
