@@ -206,6 +206,11 @@ def silentremove(file_or_folder_name):
         else:  # Folder
             shutil.rmtree(file_or_folder_name)
 
+def overridefolder(folder_path):
+    silentremove(folder_path)
+    os.makedirs(folder_path)
+    return folder_path
+
 def my_basename(s, ext=False):
     basename = os.path.basename(s)
     return basename if ext else os.path.splitext(basename)[0]

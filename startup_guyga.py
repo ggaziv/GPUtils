@@ -15,11 +15,12 @@ __email__ = "guy.gaziv@weizmann.ac.il"
 
 # print('>> Running startup script.')
 from pprint import pprint
-import sys, os
+import sys, os, copy
 from os.path import join as pjoin, exists as pexists, basename, isfile
 from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, save, inf, squeeze, mean, median, std, linspace, prod, arange, \
-    nanmean, nanmedian, nanstd, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan, ma, moveaxis
+    nanmean, nanmedian, nanstd, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan, ma, moveaxis, \
+    percentile
 import pandas as pd
 from GPUtils.utils1 import *
 import random, time
