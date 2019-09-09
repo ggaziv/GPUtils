@@ -284,6 +284,10 @@ def easystack(l, stacking_func=np.stack):
     else:
         return None
 
+def pickle_save(obj, file):
+    with open(file, 'wb') as f:
+        pickle.dump(obj, file)
+
 def unpickle(file):
     with open(file, 'rb') as fo:
         dict = pickle.load(fo)
@@ -304,6 +308,8 @@ def hist_comparison_fig(dist_dict, bins, **flags):
     plt.legend()
     return plt.gcf()
 
+hist_compare = hist_comparison_fig
+
 def sample_array(a, axis=0, size=1, replace=False):
     a = np.array(a)
     if replace:
@@ -311,3 +317,18 @@ def sample_array(a, axis=0, size=1, replace=False):
     else:
         indices = np.array(random.sample(range(a.shape[axis]), k=size))
     return np.take(a, indices, axis=axis)
+
+def reshape_sq(a):
+    d = np.sqrt(len(a))
+    assert int(d) - d == 0, 'Cannot make array to a square'
+    d = int(d)
+    return a.reshape(d, d)
+
+def sample_portion(x, q):
+    return random.sample(x, int(len(x) * q))
+
+def chained(l):
+    return list(itertools.chain(*l))
+
+def tup2list(tuple_list, tuple_idx):
+    return list(zip(*tuple_list))[tuple_idx]

@@ -13,6 +13,8 @@ import numpy as np
 import torch
 from torch import nn
 from torchvision import transforms
+from torch.utils.data import Dataset
+identity = lambda x: x
 
 __author__ = "Guy Gaziv"
 __email__ = "guy.gaziv@weizmann.ac.il"
@@ -198,3 +200,29 @@ class NormalizeInverse(transforms.Normalize):
 
 def tensor_transform(tensor, xfm):
     return torch.stack([xfm(x) for x in tensor])
+
+from GPUtils.dataset_dumper import DumpedDataset
+
+class CustomDataset(Dataset):
+    def __init__(self, dataset, input_xfm=identity, output_xfm=identity):
+        self.dataset = dataset
+        self.input_xfm = input_xfm
+        self.output_xfm = output_xfm
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        input, output = self.dataset[index]
+        return self.input_xfm(input), self.output_xfm(output)
+
+class UnlabeledDataset(Dataset):
+    def __init__(self, dataset, return_tup_index=0):
+        self.dataset = dataset
+        self.return_tup_index = return_tup_index
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        return self.dataset[index][self.return_tup_index]
