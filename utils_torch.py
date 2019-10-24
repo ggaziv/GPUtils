@@ -12,6 +12,7 @@ from time import localtime, strftime, time
 import numpy as np
 import torch
 from torch import nn
+from torch.nn import functional as F
 from torchvision import transforms
 from torch.utils.data import Dataset
 identity = lambda x: x
@@ -184,7 +185,39 @@ def save_checkpoint(state, is_best=False, checkpoint='checkpoint', filename='che
         if is_best:
             shutil.copyfile(filepath, os.path.join(checkpoint, '%s_best.pth.tar' % filename))
 
-class NormalizeInverse(transforms.Normalize):
+class NormalizeBatch(object):
+    """Normalize a tensor image with mean and standard deviation.
+    Given mean: ``(M1,...,Mn)`` and std: ``(S1,..,Sn)`` for ``n`` channels, this transform
+    will normalize each channel of the input ``torch.*Tensor`` i.e.
+    ``input[channel] = (input[channel] - mean[channel]) / std[channel]``
+
+    Args:
+        mean (sequence): Sequence of means for each channel.
+        std (sequence): Sequence of standard deviations for each channel.
+    """
+
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, tensor):
+        tensor = tensor.clone()
+        dtype = tensor.dtype
+        mean = torch.as_tensor(self.mean, dtype=dtype, device=tensor.device)
+        std = torch.as_tensor(self.std, dtype=dtype, device=tensor.device)
+        if tensor.ndim == 4:
+            tensor.sub_(mean[None, :, None, None]).div_(std[None, :, None, None])
+        elif tensor.ndim == 3:
+            tensor.sub_(mean[:, None, None]).div_(std[:, None, None])
+        else:
+            raise TypeError('tensor is not a torch image nor an image batch.')
+        return tensor
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+# class NormalizeInverse(transforms.Normalize):
+class NormalizeInverse(NormalizeBatch):
     """
     Undoes the normalization and returns the reconstructed images in the input domain.
     """
@@ -197,6 +230,8 @@ class NormalizeInverse(transforms.Normalize):
 
     def __call__(self, tensor):
         return super().__call__(tensor)
+
+
 
 def tensor_transform(tensor, xfm):
     return torch.stack([xfm(x) for x in tensor])
@@ -226,3 +261,47 @@ class UnlabeledDataset(Dataset):
 
     def __getitem__(self, index):
         return self.dataset[index][self.return_tup_index]
+
+def sym_KL(logits_A, logits_B, dim=1):
+    return .5 * (F.kl_div(F.log_softmax(logits_A, dim=dim), F.softmax(logits_B, dim=dim)) +
+                 F.kl_div(F.log_softmax(logits_B, dim=dim), F.softmax(logits_A, dim=dim)))
+
+def random_spatial_sample(tensor_NCHW, n):
+    N, C, H, W = tensor_NCHW.shape
+    return tensor_NCHW.view(N, C, H*W)[..., sorted(np.random.permutation(H*W)[:n**2])].view(N, C, n, n)
+
+def image_second_moment(gray_image):
+    x, y = torch.tensor(np.mgrid[:gray_image.shape[0], :gray_image.shape[1]], dtype=torch.float32).cuda()
+    m00 = gray_image.sum()
+    m10 = (x * gray_image).sum()
+    m01 = (y * gray_image).sum()
+    # m02 = torch.sum((y - m01/m00)**2 * gray_image / m00)
+    m02 = torch.sum((y - m01/m00)**2 * gray_image)
+    # m20 = torch.sum((x - m10/m00)**2 * gray_image / m00)
+    m20 = torch.sum((x - m10/m00)**2 * gray_image)
+    return m02 + m20
+    # mu22 = torch.sum((x - m01/m00)**2 * (y - m10/m00)**2 * gray_image)
+    # return mu22
+
+def extract_tensorboard_images(fpath, tag):
+    import tensorflow as tf
+    image_str = tf.placeholder(tf.string)
+    im_tf = tf.image.decode_image(image_str)
+    images = []
+    with tf.InteractiveSession().as_default():
+        for e in tf.train.summary_iterator(fpath):
+            for v in e.summary.value:
+                if v.tag == tag:
+                    im = im_tf.eval({image_str: v.image.encoded_image_string})
+                    images.append(im)
+    return images
+
+if __name__ == '__main__':
+    fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
+    tag = 'Train/EpochVoxRF'
+    images = extract_tensorboard_images(fpath, tag)
+
+    from PIL import Image
+    images = list(map(Image.fromarray, images))
+    images[0].save('voxRF_Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop.gif', save_all=True, append_images=images[1:], duration=60, loop=0)
+    print('guy')

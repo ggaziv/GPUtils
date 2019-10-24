@@ -315,20 +315,30 @@ def sample_array(a, axis=0, size=1, replace=False):
     if replace:
         indices = np.array(random.choices(range(a.shape[axis]), k=size))
     else:
-        indices = np.array(random.sample(range(a.shape[axis]), k=size))
+        # indices = np.array(random.sample(range(a.shape[axis]), k=size))
+        indices = np.random.permutation(a.shape[axis])[:size]
     return np.take(a, indices, axis=axis)
 
 def reshape_sq(a):
-    d = np.sqrt(len(a))
+    # d = np.sqrt(len(a))
+    d = np.sqrt(np.prod(a.shape))
     assert int(d) - d == 0, 'Cannot make array to a square'
     d = int(d)
     return a.reshape(d, d)
 
 def sample_portion(x, q):
-    return random.sample(x, int(len(x) * q))
+    # return random.sample(x, int(len(x) * q))
+    # indices = random.sample(range(len(x)), int(len(x) * q))
+    # return x[indices]
+    return x[np.random.permutation(len(x))[:int(len(x) * q)]]
 
 def chained(l):
     return list(itertools.chain(*l))
 
 def tup2list(tuple_list, tuple_idx):
     return list(zip(*tuple_list))[tuple_idx]
+
+def unique_keeporder(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
