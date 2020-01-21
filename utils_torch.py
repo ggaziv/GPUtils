@@ -266,8 +266,13 @@ def sym_KL(logits_A, logits_B, dim=1):
     return .5 * (F.kl_div(F.log_softmax(logits_A, dim=dim), F.softmax(logits_B, dim=dim)) +
                  F.kl_div(F.log_softmax(logits_B, dim=dim), F.softmax(logits_A, dim=dim)))
 
-def random_spatial_sample(tensor_NCHW, n):
+def random_spatial_sample(tensor_NCHW, num1d_or_ratio):
     N, C, H, W = tensor_NCHW.shape
+    if num1d_or_ratio < 1: # Ratio
+        n = int(H * num1d_or_ratio)
+    else:
+        n = int(num1d_or_ratio)
+    assert n > 0
     return tensor_NCHW.view(N, C, H*W)[..., sorted(np.random.permutation(H*W)[:n**2])].view(N, C, n, n)
 
 def image_second_moment(gray_image):
@@ -296,12 +301,74 @@ def extract_tensorboard_images(fpath, tag):
                     images.append(im)
     return images
 
+def alpha_norm(input_matrix, alpha):
+    """
+        Converts matrix to vector then calculates the alpha norm
+    """
+    alpha_norm = ((input_matrix.view(-1))**alpha).mean()
+    return alpha_norm
+
+def total_variation_norm(input_matrix, beta):
+    """
+        Total variation norm is the second norm in the paper
+        represented as R_V(x)
+    """
+    to_check = input_matrix[..., :-1, :-1]  # Trimmed: right - bottom
+    one_bottom = input_matrix[..., 1:, :-1]  # Trimmed: top - right
+    one_right = input_matrix[..., :-1, 1:]  # Trimmed: top - right
+    total_variation = (((to_check - one_bottom)**2 +
+                        (to_check - one_right)**2)**(beta/2)).mean()
+    return total_variation
+
+def euclidian_loss(org_matrix, target_matrix):
+    """
+        Euclidian loss is the main loss function in the paper
+        ||fi(x) - fi(x_0)||_2^2& / ||fi(x_0)||_2^2
+    """
+    distance_matrix = target_matrix - org_matrix
+    euclidian_distance = alpha_norm(distance_matrix, 2)
+    normalized_euclidian_distance = euclidian_distance / alpha_norm(org_matrix, 2)
+    return normalized_euclidian_distance
+
+def pdist(x, y=None, vectorized=True):
+    '''
+    Input: x is a Nxd matrix
+           y is an optional Mxd matirx
+    Output: dist is a NxM matrix where dist[i,j] is the square norm between x[i,:] and y[j,:]
+            if y is not given then use 'y=x'.
+    i.e. dist[i,j] = ||x[i,:]-y[j,:]||^2
+    '''
+    x_norm = (x**2).sum(1).view(-1, 1)
+    if y is not None:
+        y_t = torch.transpose(y, 0, 1)
+        y_norm = (y**2).sum(1).view(1, -1)
+    else:
+        y_t = torch.transpose(x, 0, 1)
+        y_norm = x_norm.view(1, -1)
+
+    dist = x_norm + y_norm - 2.0 * torch.mm(x, y_t)
+    # Ensure diagonal is zero if x=y
+    # if y is None:
+    #     dist = dist - torch.diag(dist.diag)
+    if vectorized:
+        ind = torch.tril_indices(*dist.shape, offset=-1)
+        dist = dist[ind[0], ind[1]]
+    return torch.clamp(dist, 0.0, np.inf)
+
+def hw_flatten(tensor):
+    return tensor.view(*tensor.shape[:-2], -1)
+
+def batch_flat(tensor):
+    return tensor.view(len(tensor), -1)
+    
 if __name__ == '__main__':
-    fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
-    tag = 'Train/EpochVoxRF'
+    # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
+    # tag = 'Train/EpochVoxRF'
+    fpath = '/mnt/tmpfs/guyga/ssfmri2im/enc/Nov24_18-26_vgg19mlsa16_112_decay0002_fcgl_chan32_batch512_epk150_corrwin5_EncTrain/events.out.tfevents.1574612778.n99.mcl.weizmann.ac.il'
+    tag = 'ValEnc/Vox_PWCorr_vs_Corr'
     images = extract_tensorboard_images(fpath, tag)
 
     from PIL import Image
     images = list(map(Image.fromarray, images))
-    images[0].save('voxRF_Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop.gif', save_all=True, append_images=images[1:], duration=60, loop=0)
+    images[0].save('PWCorrVal.gif', save_all=True, append_images=images[1:], duration=60, loop=0)
     print('guy')
