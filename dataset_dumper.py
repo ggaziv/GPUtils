@@ -5,7 +5,6 @@
 """
 
 __author__ = "Guy Gaziv"
-__email__ = "guy.gaziv@weizmann.ac.il"
 
 from GPUtils.startup_guyga import *
 from torch.utils.data import Dataset

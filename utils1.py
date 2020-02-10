@@ -20,10 +20,8 @@ import contextlib
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
-__credits__ = ["Guy Gaziv"]
-__email__ = "guy.gaziv@weizmann.ac.il"
 
-def report(func, msg):
+def report(func, msg=''):
     '''
     Decorator function to print a message before execution of a function and report its execution time
     Usage:

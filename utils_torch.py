@@ -6,7 +6,7 @@
 """
 
 import GPUtils.startup_guyga as gputils
-import os, shutil, pickle, sys, random
+import os, shutil, pickle, sys, random, itertools
 from tqdm import tqdm
 from time import localtime, strftime, time
 import numpy as np
@@ -14,11 +14,11 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torchvision import transforms
+import torchvision.utils as torchvis_utils
 from torch.utils.data import Dataset
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
-__email__ = "guy.gaziv@weizmann.ac.il"
 
 def param_count_str(parameters):
     N = sum(p.numel() for p in parameters)
@@ -361,6 +361,21 @@ def hw_flatten(tensor):
 def batch_flat(tensor):
     return tensor.view(len(tensor), -1)
     
+def montager(dataset, n_max_images_class=40):
+    images, labels = zip(*dataset)
+    # print(type(images[0]))
+    unique_labels, labels_counts = np.unique(labels, return_counts=True)
+    n_images_class = labels_counts.min()
+    k_sampled_images_class = min(n_images_class, n_max_images_class)
+    # print(n_images_class, k_sampled_images_class)
+    montage_images = list(itertools.chain(*[[images[index] for index in \
+        random.sample(list(np.where(np.array(labels) == lbl)[0]), k_sampled_images_class)] for lbl in unique_labels]))
+    # print(type(list(montage_images)))
+    # print([type(x) for x in montage_images])
+    # print([x.shape for x in montage_images])
+    img = torchvis_utils.make_grid(montage_images, nrow=k_sampled_images_class)
+    return img
+
 if __name__ == '__main__':
     # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
     # tag = 'Train/EpochVoxRF'

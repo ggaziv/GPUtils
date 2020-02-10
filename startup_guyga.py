@@ -10,8 +10,6 @@
 """
 
 __author__ = "Guy Gaziv"
-__credits__ = ["Guy Gaziv"]
-__email__ = "guy.gaziv@weizmann.ac.il"
 
 # print('>> Running startup script.')
 from pprint import pprint
@@ -54,7 +52,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
 from PIL import Image
-import nibabel as nib
+# import nibabel as nib
 import zipfile
 warnings.resetwarnings()
 warnings.simplefilter("ignore", ResourceWarning)
