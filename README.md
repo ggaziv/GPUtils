@@ -12,5 +12,4 @@ These are commonly used tools or functions that make up my standard coding desk.
 
 - cluster_batch_comp: Package for cluster parallel computing of tasks.
 
-Guy Gaziv
-ggaziv@gmail.com
+[Guy Gaziv](ggaziv@gmail.com)
