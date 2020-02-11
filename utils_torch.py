@@ -231,7 +231,26 @@ class NormalizeInverse(NormalizeBatch):
     def __call__(self, tensor):
         return super().__call__(tensor)
 
+from PIL import ImageEnhance
+transformtypedict=dict(Brightness=ImageEnhance.Brightness, Contrast=ImageEnhance.Contrast, Sharpness=ImageEnhance.Sharpness, Color=ImageEnhance.Color)
+class ImageJitter(object):
+    def __init__(self, transformdict=dict(Brightness=0.4, Contrast=0.4, Color=0.4)):
+        
+        self.transforms = [(transformtypedict[k], transformdict[k]) for k in transformdict]
 
+    def __call__(self, img):
+        out = img
+        randtensor = torch.rand(len(self.transforms))
+
+        for i, (transformer, alpha) in enumerate(self.transforms):
+            r = alpha*(randtensor[i]*2.0 -1.0) + 1
+            out = transformer(out).enhance(r).convert('RGB')
+
+        return out
+
+class NormalizeImageNet(transforms.Normalize):
+    def __init__(self):
+        super(NormalizeImageNet, self).__init__(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 def tensor_transform(tensor, xfm):
     return torch.stack([xfm(x) for x in tensor])
@@ -375,6 +394,17 @@ def montager(dataset, n_max_images_class=40):
     # print([x.shape for x in montage_images])
     img = torchvis_utils.make_grid(montage_images, nrow=k_sampled_images_class)
     return img
+    # return tensor.reshape(len(tensor), -1)
+
+def sparsity_loss(x, alpha=1, k=3, avg=False):
+    assert x.ndim == 1
+    f = lambda z: (1 + alpha * z.abs()).log()
+    for _ in range(k):
+        x = f(x)
+    if avg:
+        return x.mean()
+    else:
+        return x.sum()
 
 if __name__ == '__main__':
     # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
