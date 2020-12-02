@@ -17,6 +17,7 @@ from warnings import warn
 # from tensorflow.python.client import device_lib
 import itertools
 import contextlib
+from imutils import build_montages
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -340,3 +341,9 @@ def unique_keeporder(seq):
     seen = set()
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
+
+def make_montage(imgs):
+    N = len(imgs)
+    im_res = imgs[0].shape[0]
+    n_images_col_montage = int(np.sqrt(N) * 4 // 3)
+    return build_montages(imgs, (im_res, im_res), (n_images_col_montage, N // n_images_col_montage))[0]
