@@ -14,7 +14,7 @@ __author__ = "Guy Gaziv"
 # print('>> Running startup script.')
 from pprint import pprint
 import sys, os, copy, math, re
-from os.path import join as pjoin, exists as pexists, basename, isfile
+from os.path import join as pjoin, exists as pexists, basename, isfile, dirname
 from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, save, inf, squeeze, mean, median, std, linspace, prod, arange, \
     nanmean, nanmedian, nanstd, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan, ma, moveaxis, \
