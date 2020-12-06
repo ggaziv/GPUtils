@@ -297,7 +297,7 @@ def unpickle(file):
 
 def set_gpu(gpu_list):
     os.environ['CUDA_VISIBLE_DEVICES'] = ', '.join(gpu_list)
-    cprint1('(*) CUDA_VISIBLE_DEVICES: {}'.format(os.environ['CUDA_VISIBLE_DEVICES'])
+    cprint1('(*) CUDA_VISIBLE_DEVICES: {}'.format(os.environ['CUDA_VISIBLE_DEVICES']))
     
 def get_freer_gpu(utilization=False, tmp_filename=None):
     if tmp_filename is None:
