@@ -5,7 +5,7 @@
     Python Version: 3.5
 """
 
-import os, shutil, pickle, sys, random
+import os, shutil, pickle, sys, random, platform
 from tkinter import Tk, Label, Entry
 from time import localtime, strftime, time
 from termcolor import cprint
@@ -222,6 +222,9 @@ def my_print(x, color=None):
 def underscore_str(iterable_obj):
     return '_'.join([str(x) for x in iterable_obj])
 
+def starred(s, n_stars=10):
+    return '*' * n_stars + '\n' + s + '\n' + '*' * n_stars
+
 # def get_available_gpus():
 #     local_device_protos = device_lib.list_local_devices()
 #     return [int(x.name[-1]) for x in local_device_protos if x.device_type == 'GPU']
@@ -291,10 +294,21 @@ def unpickle(file):
         dict = pickle.load(fo)
     return dict
 
-def get_freer_gpu():
-    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
-    memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
-    return np.argmax(memory_available), max(memory_available)
+def set_gpu(gpu_list):
+    os.environ['CUDA_VISIBLE_DEVICES'] = ', '.join(gpu_list)
+    cprint1('(*) CUDA_VISIBLE_DEVICES: {}'.format(os.environ['CUDA_VISIBLE_DEVICES'])
+    
+def get_freer_gpu(utilization=False, tmp_filename=None):
+    if tmp_filename is None:
+        tmp_filename = platform.node().split('.')[0] + '_tmp'
+    if utilization:
+        os.system(f'nvidia-smi -q -d Utilization |grep -A4 GPU|grep Gpu >{tmp_filename}')
+        util = [int(x.split()[2]) for x in open(tmp_filename, 'r').readlines()]
+        return np.argmin(util), min(util)
+    else:  # By mem
+        os.system(f'nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >{tmp_filename}')
+        memory_available = [int(x.split()[2]) for x in open(tmp_filename, 'r').readlines()]
+        return np.argmax(memory_available), max(memory_available)
 
 @contextlib.contextmanager
 def dummy_context_mgr():
