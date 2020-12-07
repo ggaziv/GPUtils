@@ -303,11 +303,11 @@ def get_freer_gpu(utilization=False, tmp_filename=None):
     if tmp_filename is None:
         tmp_filename = platform.node().split('.')[0] + '_tmp'
     if utilization:
-        os.system(f'nvidia-smi -q -d Utilization |grep -A4 GPU|grep Gpu >{tmp_filename}')
+        os.system('nvidia-smi -q -d Utilization |grep -A4 GPU|grep Gpu >{}'.format(tmp_filename))
         util = [int(x.split()[2]) for x in open(tmp_filename, 'r').readlines()]
         return np.argmin(util), min(util)
     else:  # By mem
-        os.system(f'nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >{tmp_filename}')
+        os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >{}'.format(tmp_filename))
         memory_available = [int(x.split()[2]) for x in open(tmp_filename, 'r').readlines()]
         return np.argmax(memory_available), max(memory_available)
 
