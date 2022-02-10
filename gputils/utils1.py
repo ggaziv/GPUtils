@@ -298,7 +298,7 @@ def unpickle(file):
 def set_gpu(gpu_list):
     os.environ['CUDA_VISIBLE_DEVICES'] = ', '.join(gpu_list)
     cprint1('(*) CUDA_VISIBLE_DEVICES: {}'.format(os.environ['CUDA_VISIBLE_DEVICES']))
-    
+
 def get_freer_gpu(utilization=False, tmp_filename=None):
     if tmp_filename is None:
         tmp_filename = platform.node().split('.')[0] + '_tmp'
@@ -317,6 +317,9 @@ def dummy_context_mgr():
 
 def hist_comparison_fig(dist_dict, bins, **flags):
     for k, v in dist_dict.items():
+        assert (isinstance(v, np.ndarray) or
+                (isinstance(v, list) and len(v) and isinstance(v[0], np.generic))), \
+                    f'Non-ideal input for matplotlib {plt.hist.__name__}: {v}'
         plt.hist(v, bins, alpha=0.5, label=k, **flags)
     plt.legend()
     return plt.gcf()

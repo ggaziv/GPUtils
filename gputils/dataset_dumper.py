@@ -6,7 +6,7 @@
 
 __author__ = "Guy Gaziv"
 
-from GPUtils.startup_guyga import *
+from gputils.startup_guyga import *
 from torch.utils.data import Dataset
 
 class DumpedDataset(Dataset):

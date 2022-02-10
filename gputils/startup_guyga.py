@@ -14,13 +14,14 @@ __author__ = "Guy Gaziv"
 # print('>> Running startup script.')
 from pprint import pprint
 import sys, os, copy, math, re, json
+from dotmap import DotMap
 from os.path import join as pjoin, exists as pexists, basename, isfile, dirname
 from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, save, inf, squeeze, mean, median, std, linspace, prod, arange, \
     nanmean, nanmedian, nanstd, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan, ma, moveaxis, \
     percentile
 import pandas as pd
-from GPUtils.utils1 import *
+from gputils.utils1 import *
 import random, time
 from numpy.random import randint, randn, random_sample
 from termcolor import cprint

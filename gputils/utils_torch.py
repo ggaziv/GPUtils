@@ -5,11 +5,11 @@
     Python Version: 3.6
 """
 
-import GPUtils.startup_guyga as gputils
+import gputils.startup_guyga as gputils
 import os, shutil, pickle, sys, random, itertools
 from tqdm import tqdm
 from time import localtime, strftime, time
-import numpy as np
+import numpy as np, math
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -235,7 +235,7 @@ from PIL import ImageEnhance
 transformtypedict=dict(Brightness=ImageEnhance.Brightness, Contrast=ImageEnhance.Contrast, Sharpness=ImageEnhance.Sharpness, Color=ImageEnhance.Color)
 class ImageJitter(object):
     def __init__(self, transformdict=dict(Brightness=0.4, Contrast=0.4, Color=0.4)):
-        
+
         self.transforms = [(transformtypedict[k], transformdict[k]) for k in transformdict]
 
     def __call__(self, img):
@@ -255,7 +255,7 @@ class NormalizeImageNet(transforms.Normalize):
 def tensor_transform(tensor, xfm):
     return torch.stack([xfm(x) for x in tensor])
 
-from GPUtils.dataset_dumper import DumpedDataset
+from gputils.dataset_dumper import DumpedDataset
 
 class CustomDataset(Dataset):
     def __init__(self, dataset, input_xfm=identity, output_xfm=identity):
@@ -379,7 +379,7 @@ def hw_flatten(tensor):
 
 def batch_flat(tensor):
     return tensor.view(len(tensor), -1)
-    
+
 def montager(dataset, n_max_images_class=40):
     images, labels = zip(*dataset)
     # print(type(images[0]))
@@ -415,7 +415,8 @@ class SwishImplementation(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        i = ctx.saved_variables[0]
+        # i = ctx.saved_variables[0]
+        i = ctx.saved_tensors[0]
         sigmoid_i = torch.sigmoid(i)
         return grad_output * (sigmoid_i * (1 + i * (1 - sigmoid_i)))
 
@@ -429,14 +430,31 @@ class Swish(nn.Module):
     def forward(self, x):
         return x * torch.sigmoid(x)
 
-if __name__ == '__main__':
-    # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
-    # tag = 'Train/EpochVoxRF'
-    fpath = '/mnt/tmpfs/guyga/ssfmri2im/enc/Nov24_18-26_vgg19mlsa16_112_decay0002_fcgl_chan32_batch512_epk150_corrwin5_EncTrain/events.out.tfevents.1574612778.n99.mcl.weizmann.ac.il'
-    tag = 'ValEnc/Vox_PWCorr_vs_Corr'
-    images = extract_tensorboard_images(fpath, tag)
+def make_cosine_sched(max_iter, min_mult=0.01, burn_in_iter=None, L=None):
+    if burn_in_iter == None:
+        burn_in_iter = .05 * max_iter
+    if L == None:
+        L = .2 * max_iter
 
-    from PIL import Image
-    images = list(map(Image.fromarray, images))
-    images[0].save('PWCorrVal.gif', save_all=True, append_images=images[1:], duration=60, loop=0)
-    print('guy')
+    def lambda_sched(iter_i):
+        if iter_i < burn_in_iter:
+            return pow(iter_i / burn_in_iter, 4)
+        elif iter_i > L:
+            return min_mult + 0.5*(1 - min_mult)*(1 + math.cos(math.pi*(iter_i - L) / (max_iter - L)))
+        else:
+            return 1
+
+    return lambda_sched
+
+if __name__ == '__main__':
+    pass
+    # # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
+    # # tag = 'Train/EpochVoxRF'
+    # fpath = '/mnt/tmpfs/guyga/ssfmri2im/enc/Nov24_18-26_vgg19mlsa16_112_decay0002_fcgl_chan32_batch512_epk150_corrwin5_EncTrain/events.out.tfevents.1574612778.n99.mcl.weizmann.ac.il'
+    # tag = 'ValEnc/Vox_PWCorr_vs_Corr'
+    # images = extract_tensorboard_images(fpath, tag)
+
+    # from PIL import Image
+    # images = list(map(Image.fromarray, images))
+    # images[0].save('PWCorrVal.gif', save_all=True, append_images=images[1:], duration=60, loop=0)
+    # print('guy')
