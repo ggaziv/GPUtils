@@ -276,6 +276,8 @@ class PoolReported():
             return self.pool.map(f2, arg_list)
 
 def my_parse(ref_str, s, split_str='_'):
+    if s not in ref_str: 
+        return ''
     ref_str_split = ref_str.split(split_str)
     return ref_str_split[ref_str_split.index(s) + 1]
 
@@ -286,9 +288,9 @@ def easystack(l, stacking_func=np.stack):
     else:
         return None
 
-def pickle_save(obj, file):
-    with open(file, 'wb') as f:
-        pickle.dump(obj, file)
+def pickle_save(obj, file, attr='wb'):
+    with open(file, attr) as f:
+        pickle.dump(obj, f)
 
 def unpickle(file):
     with open(file, 'rb') as fo:
@@ -298,7 +300,7 @@ def unpickle(file):
 def set_gpu(gpu_list):
     os.environ['CUDA_VISIBLE_DEVICES'] = ', '.join(gpu_list)
     cprint1('(*) CUDA_VISIBLE_DEVICES: {}'.format(os.environ['CUDA_VISIBLE_DEVICES']))
-
+    
 def get_freer_gpu(utilization=False, tmp_filename=None):
     if tmp_filename is None:
         tmp_filename = platform.node().split('.')[0] + '_tmp'
