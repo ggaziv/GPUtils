@@ -276,6 +276,10 @@ class PoolReported():
             return self.pool.map(f2, arg_list)
 
 def my_parse(ref_str, s, split_str='_'):
+    """
+        E.g.,:
+            my_parse('timesteps_10', 'timesteps')
+    """
     if s not in ref_str: 
         return ''
     ref_str_split = ref_str.split(split_str)
