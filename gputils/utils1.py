@@ -213,7 +213,7 @@ def overridefolder(folder_path):
 def my_basename(s, ext=False):
     basename = os.path.basename(s)
     return basename if ext else os.path.splitext(basename)[0]
-
+                 
 def my_print(x, color=None):
     if not color:
         color = 'blue'
@@ -365,8 +365,9 @@ def unique_keeporder(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
-def make_montage(imgs):
+def make_montage(imgs, n_col=None):
     N = len(imgs)
     im_res = imgs[0].shape[0]
-    n_images_col_montage = int(np.sqrt(N) * 4 // 3)
-    return build_montages(imgs, (im_res, im_res), (n_images_col_montage, N // n_images_col_montage))[0]
+    if n_col is None:
+        n_col = int(np.sqrt(N) * 4 // 3)
+    return build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]
