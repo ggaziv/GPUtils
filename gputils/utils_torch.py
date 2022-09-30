@@ -15,7 +15,9 @@ from torch import nn
 from torch.nn import functional as F
 from torchvision import transforms
 import torchvision.utils as torchvis_utils
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+import multiprocessing as mp
+
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -446,6 +448,20 @@ def make_cosine_sched(max_iter, min_mult=0.01, burn_in_iter=None, L=None):
 
     return lambda_sched
 
+
+def benchmark_num_workers(dataset):
+    for num_workers in range(2, mp.cpu_count(), 2):  
+        train_loader = DataLoader(dataset, shuffle=True, 
+                                  num_workers=num_workers, batch_size=64, 
+                                  pin_memory=True)
+        start = time()
+        for epoch in range(1, 3):
+            for i, data in enumerate(train_loader, 0):
+                pass
+        end = time()
+        print("Finish with:{%.1f} second, num_workers={}".format(end - start, num_workers))
+    
+    
 if __name__ == '__main__':
     pass
     # # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
