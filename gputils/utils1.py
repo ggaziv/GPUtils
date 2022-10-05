@@ -332,7 +332,7 @@ def hist_comparison_fig(dist_dict, bins, **flags):
 
 hist_compare = hist_comparison_fig
 
-def sample_array(a, axis=0, size=1, replace=False):
+def sample_array(a, size=1, axis=0, replace=False):
     a = np.array(a)
     if replace:
         indices = np.array(random.choices(range(a.shape[axis]), k=size))
