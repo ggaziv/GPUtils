@@ -460,8 +460,24 @@ def benchmark_num_workers(dataset):
                 pass
         end = time()
         print("Finish with:{%.1f} second, num_workers={}".format(end - start, num_workers))
+
     
-    
+def gram_matrix(feats):
+    """ Following https://github.com/leongatys/PytorchNeuralStyleTransfer
+    """
+    b, c, h, w = feats.size()
+    F = feats.view(b, c, h*w)
+    G = torch.bmm(F, F.transpose(1,2))
+    G.div_(h*w)
+    return G
+
+
+def gram_mse_loss(pred_feats, actual_feats):
+    """ Following https://github.com/leongatys/PytorchNeuralStyleTransfer
+    """
+    return F.mse_loss(*map(gram_matrix, [pred_feats, actual_feats]))
+
+
 if __name__ == '__main__':
     pass
     # # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
