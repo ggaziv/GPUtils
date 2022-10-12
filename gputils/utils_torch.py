@@ -472,10 +472,10 @@ def gram_matrix(feats):
     return G
 
 
-def gram_mse_loss(pred_feats, actual_feats):
+def gram_mse_loss(pred_feats, actual_feats, **kwargs):
     """ Following https://github.com/leongatys/PytorchNeuralStyleTransfer
     """
-    return F.mse_loss(*map(gram_matrix, [pred_feats, actual_feats]))
+    return F.mse_loss(*map(gram_matrix, [pred_feats, actual_feats]), **kwargs)
 
 
 if __name__ == '__main__':
