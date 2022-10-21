@@ -8,6 +8,7 @@
 import os, shutil, pickle, sys, random, platform
 from tkinter import Tk, Label, Entry
 from time import localtime, strftime, time
+from typing import Iterable
 from termcolor import cprint
 import logging
 import glob
@@ -17,7 +18,6 @@ from warnings import warn
 # from tensorflow.python.client import device_lib
 import itertools
 import contextlib
-from imutils import build_montages
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -224,7 +224,7 @@ def underscore_str(iterable_obj):
     return '_'.join([str(x) for x in iterable_obj])
 
 def starred(s, n_stars=10):
-    return '*' * n_stars + '\n' + s + '\n' + '*' * n_stars
+    return '*' * n_stars + f'\n{s}\n' + '*' * n_stars
 
 # def get_available_gpus():
 #     local_device_protos = device_lib.list_local_devices()
@@ -232,6 +232,8 @@ def starred(s, n_stars=10):
 
 def listify(value):
     """ Ensures that the value is a list. If it is not a list, it creates a new list with `value` as an item. """
+    if isinstance(value, Iterable):
+        return list(value)
     if not isinstance(value, list):
         value = [value]
     return value
@@ -341,6 +343,10 @@ def sample_array(a, size=1, axis=0, replace=False):
         indices = np.random.permutation(a.shape[axis])[:size]
     return np.take(a, indices, axis=axis)
 
+def shuffled(l):
+    l = listify(l)
+    return [l[i] for i in np.random.permutation(len(l))]
+
 def reshape_sq(a):
     # d = np.sqrt(len(a))
     d = np.sqrt(np.prod(a.shape))
@@ -364,10 +370,3 @@ def unique_keeporder(seq):
     seen = set()
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
-
-def make_montage(imgs, n_col=None):
-    N = len(imgs)
-    im_res = imgs[0].shape[0]
-    if n_col is None:
-        n_col = int(np.sqrt(N) * 4 // 3)
-    return build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]

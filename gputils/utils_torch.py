@@ -17,6 +17,7 @@ from torchvision import transforms
 import torchvision.utils as torchvis_utils
 from torch.utils.data import Dataset, DataLoader
 import multiprocessing as mp
+import skimage.io as skio
 
 identity = lambda x: x
 
@@ -478,6 +479,173 @@ def gram_mse_loss(pred_feats, actual_feats, **kwargs):
     return F.mse_loss(*map(gram_matrix, [pred_feats, actual_feats]), **kwargs)
 
 
+        
+def pil2tor(pil_img=None, device=None):
+    tor_img = torch.tensor(pil_img, device=device, requires_grad=False)
+    if pil_img.ndim == 4:
+        tor_img = tor_img.permute(0, 3, 1, 2)
+    elif pil_img.ndim == 3:
+        tor_img = tor_img.permute(2, 0, 1).unsqueeze(0)
+    else:
+        raise NotImplementedError
+    tor_img = transform(tor_img.type(torch.cuda.FloatTensor) / 255.)
+    return tor_img
+
+
+def tor2pil(tor_img=None):
+    tor_img = torch.round(255. * inv_transform(tor_img).squeeze_(0))
+    if tor_img.ndim == 4:
+        tor_img = tor_img.permute(0, 2, 3, 1)
+    elif tor_img.ndim == 3:
+        tor_img = tor_img.permute(1, 2, 0)
+    else:
+        raise NotImplementedError
+    pil_img = tor_img.detach().cpu().numpy().astype(np.uint8)
+    return pil_img
+
+
+def numpify(x):
+    if isinstance(x, torch.Tensor):
+        return x.cpu().numpy()
+    else:
+        return x
+    
+
+@torch.no_grad()
+def get_activations(net, imgs_numpy_uint8, transform_norm=identity, device=torch.device('cuda:0')):
+    """Compute activations for numpy NHWC uint8 tensor
+    """
+    if imgs_numpy_uint8.ndim < 4:
+        imgs_numpy_uint8 = imgs_numpy_uint8[None]
+    imgs = torch.tensor(imgs_numpy_uint8, device=device, requires_grad=False).permute(0, 3, 1, 2)
+    imgs_torch = transform_norm(imgs.type(torch.cuda.FloatTensor) / 255.)
+    imgs_act = net(imgs_torch).detach().squeeze().cpu().numpy()
+    return imgs_act
+
+
+class ImagepathsDataset(torch.utils.data.Dataset):
+    def __init__(self, image_paths, transform=identity):
+        super().__init__()
+        self.image_paths = image_paths
+        self.transform = transform
+    
+    def __getitem__(self, index):
+        img = skio.imread(self.image_paths[index])
+        return self.transform(img)
+    
+    def __len__(self):
+        return len(self.image_paths)
+ 
+ 
+class ImageDataset(torch.utils.data.Dataset):
+    def __init__(self, images, transform=identity):
+        super().__init__()
+        self.images = images
+        self.transform = transform
+    
+    def __getitem__(self, index):
+        img = self.images[index]
+        return self.transform(img)
+    
+    def __len__(self):
+        return len(self.images)
+ 
+ 
+@torch.no_grad()
+def get_activations_from_images_batched(net, images, batch_size=100, n_threads=16, transform_norm=identity,
+                            dataloader_impl=True, device=torch.device('cuda:0'), do_tqdm=True):
+    """Get activations for images. Compute in batches.
+    """
+    acts_list = []
+    
+    if dataloader_impl:
+        my_transform = lambda img: transform_norm(torch.tensor(img, requires_grad=False).permute(2, 0, 1) / 255.)
+        dset = ImageDataset(images, my_transform)           
+        it = DataLoader(dset, batch_size=batch_size, pin_memory=True, num_workers=n_threads)
+        if do_tqdm: 
+            it = tqdm(it)
+        for img_batch in it:
+            acts_list.append(net(img_batch.to(device)).detach().squeeze().cpu().numpy())
+    else:
+        it = gputils.chunks(images, batch_size)
+        if do_tqdm: 
+            it = tqdm(it)
+        for imgs_numpy_uint8 in it:
+            acts_list.append(get_activations(net, imgs_numpy_uint8))
+    return np.vstack(acts_list)
+
+
+@torch.no_grad()
+def get_activations_from_paths_batched(net, image_paths, batch_size=100, n_threads=16, transform_norm=identity,
+                            dataloader_impl=True, device=torch.device('cuda:0'), do_tqdm=True):
+    """Get activations for images. Compute in batches.
+    """
+    acts_list = []
+    
+    if dataloader_impl:
+        my_transform = lambda img: transform_norm(torch.tensor(img, requires_grad=False).permute(2, 0, 1) / 255.)
+        dset = ImagepathsDataset(image_paths, my_transform)           
+        it = DataLoader(dset, batch_size=batch_size, pin_memory=True, num_workers=n_threads)
+        if do_tqdm: 
+            it = tqdm(it)
+        for img_batch in it:
+            acts_list.append(net(img_batch.to(device)).detach().squeeze().cpu().numpy())
+    else:
+        with gputils.Pool(n_threads) as pool:
+            it = gputils.chunks(image_paths, batch_size)
+            if do_tqdm: 
+                it = tqdm(it)
+            for image_paths_batch in it:
+                imgs_numpy_uint8 = np.array(pool.map(lambda image_path: skio.imread(image_path), image_paths_batch))
+                acts_list.append(get_activations(net, imgs_numpy_uint8))
+    return np.vstack(acts_list)
+
+       
+def get_activations_batched(net, images_or_paths, batch_size=100, n_threads=16, transform_norm=identity,
+                            dataloader_impl=True, device=torch.device('cuda:0'), do_tqdm=True):
+    """Get activations for images. Compute in batches.
+    """
+    if isinstance(images_or_paths, np.ndarray):
+        return get_activations_from_images_batched(net, images_or_paths, batch_size, 
+                                                   n_threads, transform_norm, dataloader_impl, 
+                                                   device, do_tqdm=do_tqdm)
+    else:
+        return get_activations_from_paths_batched(net, images_or_paths, batch_size, 
+                                                  n_threads, transform_norm, dataloader_impl, 
+                                                  device, do_tqdm=do_tqdm)
+
+
+def pil2tor(pil_img, transform_norm=identity, device=None):
+    tor_img = torch.tensor(pil_img, device=device, requires_grad=False)
+    if pil_img.ndim == 4:
+        tor_img = tor_img.permute(0, 3, 1, 2)
+    elif pil_img.ndim == 3:
+        tor_img = tor_img.permute(2, 0, 1).unsqueeze(0)
+    else:
+        raise NotImplementedError
+    tor_img = transform_norm(tor_img.type(torch.cuda.FloatTensor) / 255.)
+    return tor_img
+
+
+def tor2pil(tor_img, inv_transform_norm=identity):
+    tor_img = torch.round(255. * inv_transform_norm(tor_img).squeeze_(0))
+    if tor_img.ndim == 4:
+        tor_img = tor_img.permute(0, 2, 3, 1)
+    elif tor_img.ndim == 3:
+        tor_img = tor_img.permute(1, 2, 0)
+    else:
+        raise NotImplementedError
+    pil_img = tor_img.detach().cpu().numpy().astype(np.uint8)
+    return pil_img
+
+
+def numpify(x):
+    if isinstance(x, torch.Tensor):
+        return x.cpu().numpy()
+    else:
+        return x
+        
+        
 if __name__ == '__main__':
     pass
     # # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
