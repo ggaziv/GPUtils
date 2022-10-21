@@ -232,8 +232,8 @@ def starred(s, n_stars=10):
 
 def listify(value):
     """ Ensures that the value is a list. If it is not a list, it creates a new list with `value` as an item. """
-    if isinstance(value, Iterable):
-        return list(value)
+    # if isinstance(value, Iterable):
+    #     return list(value)
     if not isinstance(value, list):
         value = [value]
     return value
