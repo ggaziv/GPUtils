@@ -254,7 +254,7 @@ def invert_dict(d):
     return {v:[k for k in d if d[k] == v] for v in d.values()}
 
 def create_colormap(N):
-    return list(itertools.product(np.linspace(0, .7, np.ceil(N ** (1/3))), repeat=3))
+    return list(itertools.product(np.linspace(0, .7, int(np.ceil(N ** (1/3)))), repeat=3))
 
 class PoolReported():
     def __init__(self, n_threads):
