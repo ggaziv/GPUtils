@@ -9,6 +9,7 @@ import numpy as np
 import itertools
 from collections import namedtuple
 import pandas as pd
+from collections import deque
 
 
 def set_axes_equal(ax):
@@ -49,13 +50,20 @@ def add_unity_ref_planes(ax, alpha=0.2):
     limits_dict = {ax_name: getattr(ax, f'get_{ax_name}lim3d')() for ax_name in ['x', 'y', 'z']}
     lim_max = max(lim[1] for lim in limits_dict.values())
     lim_min = max(lim[0] for lim in limits_dict.values())
-    for ax_name in limits_dict:
-        ax_names_other = [ax_name1 for ax_name1 in limits_dict if ax_name1 != ax_name]
+    aa, bb = np.meshgrid(*([np.array((lim_min, lim_max))] * 2))  
+    deq = deque(['x', 'y', 'z'])
+    d = dict(zip(['x', 'y', 'z'], [aa, bb, aa]))
+    for _ in range(len(deq)):
+        # ax_names_other, ax_name = (deq[0], deq[1]), deq[2]
+        # ax_names_other = [ax_name1 for ax_name1 in limits_dict if ax_name1 != ax_name]
         # aa, bb = np.meshgrid(*[array(limits_dict[ax_name1]) for ax_name1 in ax_names_other])
         # aa, bb = np.meshgrid(*([array((-100, 100))] * 2))
-        aa, bb = np.meshgrid(*([np.array((lim_min, lim_max))] * 2))
-        d = dict(zip((ax_names_other + [ax_name]), [aa, bb, (aa + bb)/2]))
-        ax.plot_surface(*[d[ax_name1] for ax_name1 in ['x', 'y', 'z']], alpha=alpha)
+        # d = dict(zip((ax_names_other + [ax_name]), [aa, bb, (aa + bb)/2]))
+        # d = dict(zip((ax_names_other + [ax_name]), [aa, bb, aa]))
+        # print(deq)
+        # ax.plot_surface(*[d[ax_name1] for ax_name1 in ['x', 'y', 'z']], alpha=alpha)
+        ax.plot_surface(*[d[ax_name1] for ax_name1 in deq], alpha=alpha)
+        deq.rotate(1)
         
 
 class ErrorBarred():
