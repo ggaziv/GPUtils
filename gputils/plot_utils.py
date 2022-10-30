@@ -4,7 +4,11 @@
 
 
 import gputils.startup_guyga as gputils
+import seaborn as sns
 import numpy as np 
+import itertools
+from collections import namedtuple
+import pandas as pd
 
 
 def set_axes_equal(ax):
@@ -52,3 +56,56 @@ def add_unity_ref_planes(ax, alpha=0.2):
         aa, bb = np.meshgrid(*([np.array((lim_min, lim_max))] * 2))
         d = dict(zip((ax_names_other + [ax_name]), [aa, bb, (aa + bb)/2]))
         ax.plot_surface(*[d[ax_name1] for ax_name1 in ['x', 'y', 'z']], alpha=alpha)
+        
+
+class ErrorBarred():
+    def __init__(self, plotter=sns.scatterplot):
+        self.plotter = plotter
+        
+    def __call__(self, data: pd.DataFrame, x: str, y: str, hue: str=None, 
+                 boot_var: str=None, estimator='mean', 
+                 errorbar=('ci', 95), n_boot=1000, 
+                 elinewidth=2, ecolor='k',capsize=2,
+                 err_alpha=None, errorevery=1, seed=None, 
+                 n_threads=None, **kwargs):
+        
+        agg = sns._statistics.EstimateAggregator(estimator, errorbar, n_boot=n_boot, seed=seed)
+        cols_exclude = [x, y, boot_var]
+        columns_group = [col_name for col_name in data.columns if col_name not in cols_exclude]
+        data = data.dropna(subset=[x, y])
+        it = itertools.product(*[data[k].unique() for k in columns_group])
+        groupped = data.groupby(columns_group)
+        value_tup = namedtuple('Value', ['val', 'err_min', 'err_max'])
+        def extract_res(g, var): 
+            df_agg = groupped.get_group(g)
+            if len(df_agg) == 1:
+                return value_tup(float(df_agg[var]), 0, 0)
+            res = agg(df_agg, var)
+            return value_tup(res[f"{var}"], res[f"{var}"]-res[f"{var}min"], res[f"{var}max"]-res[f"{var}"])
+
+        point = namedtuple('Point', ['x', 'y'])
+        if n_threads is None:
+            err_list = []
+            for g in it:
+                err_list.append(point(*[extract_res(g, var) for var in [x, y]]))
+        else:
+            with gputils.Pool(n_threads) as pool:
+                err_list = pool.map(lambda g: point(*[extract_res(g, var) for var in [x, y]]), list(it))
+        
+        data1 = data.groupby(columns_group).mean().reset_index()
+        g = self.plotter(data=data1, x=x, y=y, hue=hue, **kwargs)
+        x_vals, y_vals, x_errs_min, x_errs_max, y_errs_min, y_errs_max = list(zip(*[(err.x.val, err.y.val, 
+                                                                                     err.x.err_min, err.x.err_max, 
+                                                                                     err.y.err_min, err.y.err_max) for err in err_list]))
+        g.errorbar(x_vals, 
+                   y_vals, 
+                   xerr=[x_errs_min, x_errs_max], 
+                   yerr=[y_errs_min, y_errs_max],
+                   fmt=' ',
+                   elinewidth=elinewidth,
+                   capsize=capsize,
+                   ecolor=ecolor,
+                   alpha=err_alpha,
+                   errorevery=errorevery)
+        return g
+                             
