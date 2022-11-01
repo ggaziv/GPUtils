@@ -645,7 +645,36 @@ def numpify(x):
         return x.cpu().numpy()
     else:
         return x
-        
+
+
+def make_weights_for_balanced_classes(dset, nclasses):
+    """Balanced Sampling between classes with torchvision DataLoader
+    https://discuss.pytorch.org/t/balanced-sampling-between-classes-with-torchvision-dataloader/2703   
+    """                        
+    count = [0] * nclasses                                                      
+    for _, lbl in dset:                                                         
+        count[lbl] += 1                                                     
+    weight_per_class = [0.] * nclasses                                      
+    N = float(sum(count))                                                   
+    for i in range(nclasses):                                                   
+        weight_per_class[i] = N/float(count[i])                                 
+    weight = [0] * len(dset)                                              
+    for idx, (_, lbl) in enumerate(dset):                                          
+        weight[idx] = weight_per_class[lbl]                                  
+    return weight        
+
+
+def get_dataloader_balance_sampler(dset, nclasses):
+    """ For unbalanced dataset we create a weighted sampler
+    Usage: 
+        train_loader = torch.utils.data.DataLoader(dataset_train, batch_size=args.batch_size, shuffle = True,                              
+                                                   sampler = sampler, num_workers=args.workers, pin_memory=True)   
+    """
+    weights = make_weights_for_balanced_classes(dset, nclasses)                                                                
+    weights = torch.DoubleTensor(weights)                                       
+    sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
+    return sampler 
+    
         
 if __name__ == '__main__':
     pass
