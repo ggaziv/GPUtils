@@ -18,6 +18,7 @@ from warnings import warn
 # from tensorflow.python.client import device_lib
 import itertools
 import contextlib
+from tqdm import tqdm
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -269,13 +270,20 @@ class PoolReported():
         self.pool.close()
 
     def map(self, f1, arg_list):
-        from tqdm import tqdm
         with tqdm(total=len(arg_list)) as pbar:
             def f2(x):
                 y = f1(x)
                 pbar.update(1)
                 return y
             return self.pool.map(f2, arg_list)
+        
+    def imap_unordered(self, f1, arg_list):
+        with tqdm(total=len(arg_list)) as pbar:
+            def f2(x):
+                y = f1(x)
+                pbar.update(1)
+                return y
+            return self.pool.imap_unordered(f2, arg_list)
 
 def my_parse(ref_str, s, split_str='_'):
     """

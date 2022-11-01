@@ -83,29 +83,34 @@ class ErrorBarred():
         columns_group = [col_name for col_name in data.columns if col_name not in cols_exclude]
         # data = data.dropna(subset=[x, y])
         isna = data.isna()
-        data = data[~isna[x] & ~isna[y]]
+        data = data[~isna[x] | ~isna[y]]
         # it = itertools.product(*[data[k].unique() for k in columns_group])
         it = data[columns_group].drop_duplicates().itertuples(index=False, name=None)
         groupped = data.groupby(columns_group)
         value_tup = namedtuple('Value', ['val', 'err_min', 'err_max'])
         def extract_res(g, var): 
             df_agg = groupped.get_group(g)
+            df_agg.dropna(subset=var)
+            if len(df_agg) == 0:
+                return None
             if len(df_agg) == 1:
                 return value_tup(float(df_agg[var]), 0, 0)
             res = agg(df_agg, var)
             return value_tup(res[f"{var}"], res[f"{var}"]-res[f"{var}min"], res[f"{var}max"]-res[f"{var}"])
             # except:
             #     warnings.warn(f"Group {g} not found. Skipping")
-            #     return value_tup(0, 0, 0)
-                
+            #     return value_tup(0, 0, 0)     
         point = namedtuple('Point', ['x', 'y'])
-        if n_threads is None:
-            err_list = []
-            for g in it:
-                err_list.append(point(*[extract_res(g, var) for var in [x, y]]))
-        else:
-            with gputils.Pool(n_threads) as pool:
-                err_list = pool.map(lambda g: point(*[extract_res(g, var) for var in [x, y]]), list(it))
+        # if n_threads is None:
+        err_list = []
+        for g in it:
+            point_xy = [extract_res(g, var) for var in [x, y]]
+            if not None in point_xy:
+                err_list.append(point(*point_xy))
+            # err_list.append(point(*[extract_res(g, var) for var in [x, y]]))
+        # else:
+        #     with gputils.Pool(n_threads) as pool:
+        #         err_list = pool.map(lambda g: point(*[extract_res(g, var) for var in [x, y]]), list(it))
         
         data1 = data.groupby(columns_group).mean().reset_index()
         g = self.plotter(data=data1, x=x, y=y, hue=hue, **kwargs)
