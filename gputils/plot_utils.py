@@ -3,6 +3,7 @@
 """
 
 
+import warnings
 import gputils.startup_guyga as gputils
 import seaborn as sns
 import numpy as np 
@@ -72,7 +73,7 @@ class ErrorBarred():
         
     def __call__(self, data: pd.DataFrame, x: str, y: str, hue: str=None, 
                  boot_var: str=None, estimator='mean', 
-                 errorbar=('ci', 95), n_boot=1000, 
+                 errorbar=('ci', 95), n_boot=100, 
                  elinewidth=2, ecolor='k',capsize=2,
                  err_alpha=None, errorevery=1, seed=None, 
                  n_threads=None, **kwargs):
@@ -80,8 +81,11 @@ class ErrorBarred():
         agg = sns._statistics.EstimateAggregator(estimator, errorbar, n_boot=n_boot, seed=seed)
         cols_exclude = [x, y, boot_var]
         columns_group = [col_name for col_name in data.columns if col_name not in cols_exclude]
-        data = data.dropna(subset=[x, y])
-        it = itertools.product(*[data[k].unique() for k in columns_group])
+        # data = data.dropna(subset=[x, y])
+        isna = data.isna()
+        data = data[~isna[x] & ~isna[y]]
+        # it = itertools.product(*[data[k].unique() for k in columns_group])
+        it = data[columns_group].drop_duplicates().itertuples(index=False, name=None)
         groupped = data.groupby(columns_group)
         value_tup = namedtuple('Value', ['val', 'err_min', 'err_max'])
         def extract_res(g, var): 
@@ -90,7 +94,10 @@ class ErrorBarred():
                 return value_tup(float(df_agg[var]), 0, 0)
             res = agg(df_agg, var)
             return value_tup(res[f"{var}"], res[f"{var}"]-res[f"{var}min"], res[f"{var}max"]-res[f"{var}"])
-
+            # except:
+            #     warnings.warn(f"Group {g} not found. Skipping")
+            #     return value_tup(0, 0, 0)
+                
         point = namedtuple('Point', ['x', 'y'])
         if n_threads is None:
             err_list = []
