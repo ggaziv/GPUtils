@@ -74,13 +74,44 @@ class ErrorBarred():
     def __call__(self, data: pd.DataFrame, x: str, y: str, hue: str=None, 
                  boot_var: str=None, estimator='mean', 
                  errorbar=('ci', 95), n_boot=100, 
+                 post_agg_fn_x=None, post_agg_fn_y=None,
                  elinewidth=2, ecolor='k',capsize=2,
                  err_alpha=None, errorevery=1, seed=None, 
                  n_threads=None, **kwargs):
         
-        agg = sns._statistics.EstimateAggregator(estimator, errorbar, n_boot=n_boot, seed=seed)
         cols_exclude = [x, y, boot_var]
         columns_group = [col_name for col_name in data.columns if col_name not in cols_exclude]
+        data1 = data.groupby(columns_group).mean().reset_index().copy()
+        for col_name, post_agg_fn in zip((x,y), (post_agg_fn_x, post_agg_fn_y)):
+            if post_agg_fn is not None:
+                data1[col_name] = post_agg_fn(data1[col_name])
+        g = self.plotter(data=data1, x=x, y=y, hue=hue, **kwargs)
+        
+        if boot_var is not None:
+            err_list = self.compute_errorbars(data, x, y, columns_group, 
+                                              estimator, errorbar, n_boot, 
+                                              post_agg_fn_x, post_agg_fn_y, 
+                                              seed)
+            x_vals, y_vals, x_errs_min, x_errs_max, y_errs_min, y_errs_max = list(zip(*[(err.x.val, err.y.val, 
+                                                                                    err.x.err_min, err.x.err_max, 
+                                                                                    err.y.err_min, err.y.err_max) for err in err_list]))
+            g.errorbar(x_vals, 
+                    y_vals, 
+                    xerr=[x_errs_min, x_errs_max], 
+                    yerr=[y_errs_min, y_errs_max],
+                    fmt=' ',
+                    elinewidth=elinewidth,
+                    capsize=capsize,
+                    ecolor=ecolor,
+                    alpha=err_alpha,
+                    errorevery=errorevery)
+        return g
+    
+    def compute_errorbars(self, data, x, y, columns_group, 
+                          estimator, errorbar, n_boot, 
+                          post_agg_fn_x, post_agg_fn_y, 
+                          seed):
+        agg = sns._statistics.EstimateAggregator(estimator, errorbar, n_boot=n_boot, seed=seed)
         # data = data.dropna(subset=[x, y])
         isna = data.isna()
         data = data[~isna[x] | ~isna[y]]
@@ -88,15 +119,21 @@ class ErrorBarred():
         it = data[columns_group].drop_duplicates().itertuples(index=False, name=None)
         groupped = data.groupby(columns_group)
         value_tup = namedtuple('Value', ['val', 'err_min', 'err_max'])
-        def extract_res(g, var): 
+        def extract_res(g, var, post_agg_fn): 
             df_agg = groupped.get_group(g)
             df_agg.dropna(subset=var)
             if len(df_agg) == 0:
                 return None
-            if len(df_agg) == 1:
-                return value_tup(float(df_agg[var]), 0, 0)
-            res = agg(df_agg, var)
-            return value_tup(res[f"{var}"], res[f"{var}"]-res[f"{var}min"], res[f"{var}max"]-res[f"{var}"])
+            elif len(df_agg) == 1:
+                res = float(df_agg[var])
+                if post_agg_fn is not None:
+                    res = post_agg_fn(res)
+                return value_tup(res, 0, 0)
+            else:
+                res = agg(df_agg, var)
+                if post_agg_fn is not None:
+                    res[f"{var}"], res[f"{var}min"], res[f"{var}max"] = map(post_agg_fn, (res[f"{var}"], res[f"{var}min"], res[f"{var}max"]))
+                return value_tup(res[f"{var}"], res[f"{var}"]-res[f"{var}min"], res[f"{var}max"]-res[f"{var}"])
             # except:
             #     warnings.warn(f"Group {g} not found. Skipping")
             #     return value_tup(0, 0, 0)     
@@ -104,7 +141,7 @@ class ErrorBarred():
         # if n_threads is None:
         err_list = []
         for g in it:
-            point_xy = [extract_res(g, var) for var in [x, y]]
+            point_xy = [extract_res(g, var, post_agg_fn) for var, post_agg_fn in zip([x, y], (post_agg_fn_x, post_agg_fn_y))]
             if not None in point_xy:
                 err_list.append(point(*point_xy))
             # err_list.append(point(*[extract_res(g, var) for var in [x, y]]))
@@ -112,20 +149,5 @@ class ErrorBarred():
         #     with gputils.Pool(n_threads) as pool:
         #         err_list = pool.map(lambda g: point(*[extract_res(g, var) for var in [x, y]]), list(it))
         
-        data1 = data.groupby(columns_group).mean().reset_index()
-        g = self.plotter(data=data1, x=x, y=y, hue=hue, **kwargs)
-        x_vals, y_vals, x_errs_min, x_errs_max, y_errs_min, y_errs_max = list(zip(*[(err.x.val, err.y.val, 
-                                                                                     err.x.err_min, err.x.err_max, 
-                                                                                     err.y.err_min, err.y.err_max) for err in err_list]))
-        g.errorbar(x_vals, 
-                   y_vals, 
-                   xerr=[x_errs_min, x_errs_max], 
-                   yerr=[y_errs_min, y_errs_max],
-                   fmt=' ',
-                   elinewidth=elinewidth,
-                   capsize=capsize,
-                   ecolor=ecolor,
-                   alpha=err_alpha,
-                   errorevery=errorevery)
-        return g
+        return err_list
                              
