@@ -11,6 +11,8 @@ import itertools
 from collections import namedtuple
 import pandas as pd
 from collections import deque
+from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage,
+                                  AnnotationBbox)
 
 
 def set_axes_equal(ax):
@@ -150,4 +152,49 @@ class ErrorBarred():
         #         err_list = pool.map(lambda g: point(*[extract_res(g, var) for var in [x, y]]), list(it))
         
         return err_list
-                             
+                                    
+
+class AnnotatedScatter():
+    """Add tooltip images on hover on scatterplot
+    """
+    def __init__(self, ax, scatter_list, fig=None):
+        self.ax = ax
+        self.scatter_list = scatter_list
+        if fig is None:
+            self.fig = gputils.plt.gcf()
+        else:
+            self.fig = fig
+        self.ab = AnnotationBbox(OffsetImage(np.zeros((100,100,3)), zoom=0.2), 
+                            (0,0),
+                            # xybox=(0,0),
+                            xybox=(60., -60.),
+                            xycoords='data',
+                            boxcoords="offset points",
+                            pad=0.5,
+                            bboxprops=dict(linewidth=0.),
+                            # arrowprops=dict(
+                            #     # arrowstyle="->",
+                            #     # connectionstyle="angle,angleA=0,angleB=90,rad=3"
+                            # )
+                            )
+        self.ax.add_artist(self.ab)
+        self.ab.set_visible(False)
+
+    def hover(self, event):
+        # ab.set_visible(True)
+        vis = self.ab.get_visible()
+        if event.inaxes == self.ax:
+            for sc, sc_images in self.scatter_list:
+                is_contained, items = sc.contains(event)
+                if is_contained:
+                    point_index = items['ind'][0]
+                    pos = sc.get_offsets()[point_index]
+                    self.ab.xy = pos
+                    self.ab.offsetbox = OffsetImage(np.array(sc_images[point_index]), zoom=0.4)
+                    self.ab.set_visible(True)
+                    self.fig.canvas.draw_idle()
+                    return
+            if vis:
+                self.ab.set_visible(False)
+                self.fig.canvas.draw_idle()
+                
