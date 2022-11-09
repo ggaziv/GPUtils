@@ -98,15 +98,15 @@ class ErrorBarred():
                                                                                     err.x.err_min, err.x.err_max, 
                                                                                     err.y.err_min, err.y.err_max) for err in err_list]))
             g.errorbar(x_vals, 
-                    y_vals, 
-                    xerr=[x_errs_min, x_errs_max], 
-                    yerr=[y_errs_min, y_errs_max],
-                    fmt=' ',
-                    elinewidth=elinewidth,
-                    capsize=capsize,
-                    ecolor=ecolor,
-                    alpha=err_alpha,
-                    errorevery=errorevery)
+                       y_vals, 
+                       xerr=[x_errs_min, x_errs_max], 
+                       yerr=[y_errs_min, y_errs_max],
+                       fmt=' ',
+                       elinewidth=elinewidth,
+                       capsize=capsize,
+                       ecolor=ecolor,
+                       alpha=err_alpha,
+                       errorevery=errorevery)
         return g
     
     def compute_errorbars(self, data, x, y, columns_group, 
@@ -127,7 +127,7 @@ class ErrorBarred():
             if len(df_agg) == 0:
                 return None
             elif len(df_agg) == 1:
-                res = float(df_agg[var])
+                res = df_agg[var].iloc[0]
                 if post_agg_fn is not None:
                     res = post_agg_fn(res)
                 return value_tup(res, 0, 0)
@@ -170,7 +170,7 @@ class AnnotatedScatter():
                             xybox=(60., -60.),
                             xycoords='data',
                             boxcoords="offset points",
-                            pad=0.5,
+                            # pad=0.5,
                             bboxprops=dict(linewidth=0.),
                             # arrowprops=dict(
                             #     # arrowstyle="->",
@@ -190,7 +190,7 @@ class AnnotatedScatter():
                     point_index = items['ind'][0]
                     pos = sc.get_offsets()[point_index]
                     self.ab.xy = pos
-                    self.ab.offsetbox = OffsetImage(np.array(sc_images[point_index]), zoom=0.4)
+                    self.ab.offsetbox = OffsetImage(np.array(sc_images[point_index]), zoom=0.4, zorder=10)
                     self.ab.set_visible(True)
                     self.fig.canvas.draw_idle()
                     return
