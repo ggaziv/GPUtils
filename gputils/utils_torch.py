@@ -480,31 +480,6 @@ def gram_mse_loss(pred_feats, actual_feats, **kwargs):
     return F.mse_loss(*map(gram_matrix, [pred_feats, actual_feats]), **kwargs)
 
 
-        
-def pil2tor(pil_img=None, device=None):
-    tor_img = torch.tensor(pil_img, device=device, requires_grad=False)
-    if pil_img.ndim == 4:
-        tor_img = tor_img.permute(0, 3, 1, 2)
-    elif pil_img.ndim == 3:
-        tor_img = tor_img.permute(2, 0, 1).unsqueeze(0)
-    else:
-        raise NotImplementedError
-    tor_img = transform(tor_img.type(torch.cuda.FloatTensor) / 255.)
-    return tor_img
-
-
-def tor2pil(tor_img=None):
-    tor_img = torch.round(255. * inv_transform(tor_img).squeeze_(0))
-    if tor_img.ndim == 4:
-        tor_img = tor_img.permute(0, 2, 3, 1)
-    elif tor_img.ndim == 3:
-        tor_img = tor_img.permute(1, 2, 0)
-    else:
-        raise NotImplementedError
-    pil_img = tor_img.detach().cpu().numpy().astype(np.uint8)
-    return pil_img
-
-
 def numpify(x):
     if isinstance(x, torch.Tensor):
         return x.cpu().numpy()
@@ -675,7 +650,12 @@ def get_dataloader_balance_sampler(dset, nclasses):
     sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
     return sampler 
     
-        
+
+def tempsigmoid(x, nd=3.0):
+    temp = nd / torch.log(torch.tensor(9.0)) 
+    return torch.sigmoid(x / temp) 
+
+
 if __name__ == '__main__':
     pass
     # # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
