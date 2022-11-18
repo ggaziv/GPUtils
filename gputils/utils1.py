@@ -13,12 +13,14 @@ from termcolor import cprint
 import logging
 import glob
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 from matplotlib import pyplot as plt
 from warnings import warn
 # from tensorflow.python.client import device_lib
 import itertools
 import contextlib
 from tqdm import tqdm
+from collections import namedtuple
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -342,14 +344,14 @@ def hist_comparison_fig(dist_dict, bins, **flags):
 
 hist_compare = hist_comparison_fig
 
-def sample_array(a, size=1, axis=0, replace=False):
+def sample_array(a: ArrayLike, size=1, axis=0, replace=False):
     a = np.array(a)
     if replace:
         indices = np.array(random.choices(range(a.shape[axis]), k=size))
     else:
         # indices = np.array(random.sample(range(a.shape[axis]), k=size))
         indices = np.random.permutation(a.shape[axis])[:size]
-    return np.take(a, indices, axis=axis)
+    return a.take(indices, axis=axis)
 
 def shuffled(l):
     l = listify(l)
@@ -378,3 +380,7 @@ def unique_keeporder(seq):
     seen = set()
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
+
+def fill_first(named_tup: namedtuple, item_list, fill_val=None):
+    n_missing = len(named_tup._fields) - len(item_list)
+    return named_tup(*item_list, *([fill_val] * n_missing))
