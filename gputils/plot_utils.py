@@ -15,6 +15,19 @@ from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage,
                                   AnnotationBbox)
 
 
+def set_pub():
+    gputils.plt.rcParams.update({
+        "font.weight": "bold",  # bold fonts
+        "tick.labelsize": 15,   # large tick labels
+        "lines.linewidth": 1,   # thick lines
+        "lines.color": "k",     # black lines
+        "grid.color": "0.5",    # gray gridlines
+        "grid.linestyle": "-",  # solid gridlines
+        "grid.linewidth": 0.5,  # thin gridlines
+        "savefig.dpi": 300,     # higher resolution output.
+    })
+    
+    
 def set_axes_equal(ax):
     """Make axes of 3D plot have equal scale so that spheres appear as spheres,
         cubes as cubes, etc..  
@@ -79,7 +92,9 @@ class ErrorBarred():
                  post_agg_fn_x=None, post_agg_fn_y=None,
                  elinewidth=2, ecolor='k',capsize=2,
                  err_alpha=None, errorevery=1, seed=None, 
-                 n_threads=None, **kwargs):
+                 n_threads=None, palette=None, **kwargs):
+        if palette is None:
+            palette = sns.color_palette('bright', len(data.reset_index()[hue].unique()))
         
         cols_exclude = [x, y, boot_var]
         columns_group = [col_name for col_name in data.columns if col_name not in cols_exclude]
@@ -87,7 +102,7 @@ class ErrorBarred():
         for col_name, post_agg_fn in zip((x,y), (post_agg_fn_x, post_agg_fn_y)):
             if post_agg_fn is not None:
                 data1[col_name] = post_agg_fn(data1[col_name])
-        g = self.plotter(data=data1, x=x, y=y, hue=hue, **kwargs)
+        g = self.plotter(data=data1, x=x, y=y, hue=hue, palette=palette, **kwargs)
         
         if boot_var is not None:
             err_list = self.compute_errorbars(data, x, y, columns_group, 
