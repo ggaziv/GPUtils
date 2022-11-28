@@ -21,6 +21,7 @@ import itertools
 import contextlib
 from tqdm import tqdm
 from collections import namedtuple
+import re
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -297,6 +298,15 @@ def my_parse(ref_str, s, split_str='_'):
     ref_str_split = ref_str.split(split_str)
     return ref_str_split[ref_str_split.index(s) + 1]
 
+def extract_from_string(s, ref_str, regextype='\d+'):
+    """Supports recursion"""
+    if len(ref_str) == 0:
+        return []
+    if isinstance(ref_str, list):
+        return [extract_from_string(s, ref_str[0], regextype)] + extract_from_string(s, ref_str[1:], regextype)
+    else:
+        return int(re.findall(r'{}{}'.format(ref_str,regextype) , s)[0].replace(ref_str, ''))
+
 def easystack(l, stacking_func=np.stack):
     l = [x for x in l if x is not None]
     if len(l) > 0:
@@ -384,3 +394,4 @@ def unique_keeporder(seq):
 def fill_first(named_tup: namedtuple, item_list, fill_val=None):
     n_missing = len(named_tup._fields) - len(item_list)
     return named_tup(*item_list, *([fill_val] * n_missing))
+    
