@@ -656,6 +656,13 @@ def tempsigmoid(x, nd=3.0):
     return torch.sigmoid(x / temp) 
 
 
+def set_seed(seed=0):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    
+
 if __name__ == '__main__':
     pass
     # # fpath = '/mnt/tmpfs/guyga/ssfmri2im/Sep19_21-27_alexnet_112_decay0005_fcmom50_momdrop_EncTrain/events.out.tfevents.1568917675.n99.mcl.weizmann.ac.il'
