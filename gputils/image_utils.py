@@ -7,7 +7,7 @@ import gputils.startup_guyga as gputils
 from skimage import io as skio
 from imutils import build_montages
 import numpy as np
-from PIL import ImageFont, ImageDraw
+from PIL import Image, ImageFont, ImageDraw
 
 
 def make_montage(imgs, n_col=None):
@@ -19,11 +19,24 @@ def make_montage(imgs, n_col=None):
     return build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]
 
 
-def get_images(images_paths, n_threads=20):
+def get_images(images_paths, n_threads=20, use_pil=False, force_rgb=False, reported=False):
     """Return the list of frames given by list of absolute paths.
     """
-    with gputils.PoolReported(n_threads) as pool:
-        res_list = pool.map(lambda image_path: skio.imread(image_path), images_paths)
+    if use_pil:
+        if force_rgb:
+            reader_fn = lambda image_path: np.array(Image.open(image_path).convert('RGB'))
+        else:
+            reader_fn = lambda image_path: np.array(Image.open(image_path))
+    else:
+        if force_rgb:
+            raise NotImplementedError
+        reader_fn = lambda image_path: skio.imread(image_path)
+    if reported:
+        MyPool = gputils.PoolReported
+    else:
+        MyPool = gputils.Pool
+    with MyPool(n_threads) as pool:
+        res_list = pool.map(reader_fn, images_paths)
     return np.array(res_list)
 
 
@@ -61,7 +74,17 @@ class FrameLabeler():
         draw.text(self.xy, label , self.color, font=self.font)
         return img_pil
     
-    
+
+def interp_images(im1, im2, alpha=None):
+    if alpha is None:
+        alpha = np.random.rand()
+    interpolated = (alpha * im1 + (1-alpha) * im2)
+    if isinstance(interpolated, np.ndarray):
+        return interpolated.astype(im1.dtype)
+    else:
+        return interpolated.type(im1.dtype)
+
+
 # def save_gif(frames_pil, filepath, duration=100, loop=1):
 #     """Images don't look good"""
 #     frames = [gputils.Image.fromarray(arr) for arr in frames_pil]
