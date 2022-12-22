@@ -20,7 +20,7 @@ from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, save, inf, squeeze, mean, median, std, linspace, prod, arange, \
     nanmean, nanmedian, nanstd, nanmax, nanmin, round, zeros, ones, where, unique, reshape, sqrt, isnan, ma, moveaxis, \
     percentile
-import pandas as pd
+import pandas as pd, xarray as xr
 from gputils.utils1 import *
 import random, time
 from numpy.random import randint, randn, random_sample
