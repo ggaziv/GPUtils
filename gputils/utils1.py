@@ -22,6 +22,7 @@ import contextlib
 from tqdm import tqdm
 from collections import namedtuple
 import re
+from contextlib import contextmanager
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -394,4 +395,3 @@ def unique_keeporder(seq):
 def fill_first(named_tup: namedtuple, item_list, fill_val=None):
     n_missing = len(named_tup._fields) - len(item_list)
     return named_tup(*item_list, *([fill_val] * n_missing))
-    
