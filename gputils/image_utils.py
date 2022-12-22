@@ -5,9 +5,12 @@
 
 import gputils.startup_guyga as gputils
 from skimage import io as skio
+import skvideo.io  
 from imutils import build_montages
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
+from matplotlib import animation
+import torchvision.io
 
 
 def make_montage(imgs, n_col=None):
@@ -19,18 +22,25 @@ def make_montage(imgs, n_col=None):
     return build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]
 
 
-def get_images(images_paths, n_threads=20, use_pil=False, force_rgb=False, reported=False):
+def get_images(images_paths, resize_dim=None, n_threads=20, use_pil=False, force_rgb=False, reported=False):
     """Return the list of frames given by list of absolute paths.
     """
+    if resize_dim is None:
+        resize_fn = lambda x: x
+    else:
+        if use_pil:
+            resize_fn = lambda x: x.resize(resize_dim, Image.ANTIALIAS)
+        else:
+            resize_fn = lambda x: skio.transform.resize(x, resize_dim, anti_aliasing=True)
     if use_pil:
         if force_rgb:
-            reader_fn = lambda image_path: np.array(Image.open(image_path).convert('RGB'))
+            reader_fn = lambda image_path: np.array(resize_fn(Image.open(image_path).convert('RGB')))
         else:
-            reader_fn = lambda image_path: np.array(Image.open(image_path))
+            reader_fn = lambda image_path: np.array(resize_fn(Image.open(image_path)))
     else:
         if force_rgb:
             raise NotImplementedError
-        reader_fn = lambda image_path: skio.imread(image_path)
+        reader_fn = lambda image_path: resize_fn(skio.imread(image_path))
     if reported:
         MyPool = gputils.PoolReported
     else:
@@ -84,6 +94,50 @@ def interp_images(im1, im2, alpha=None):
     else:
         return interpolated.type(im1.dtype)
 
+
+def get_video(video_path, resize_dim=None):
+    """Return array of NxHxWx3 of frames given by the video path.
+    """
+    vid = skvideo.io.vread(video_path)
+    if resize_dim is None:
+        return vid
+    else:
+        return resize_vid(vid, resize_dim)
+    
+
+def resize_vid(vid, resize_dim):
+    """Assume vid is NxHxWx3
+    """
+    return np.stack([np.array(Image.fromarray(vid[i, :, :, :])
+                              .resize(resize_dim, Image.ANTIALIAS)) 
+                     for i in range(vid.shape[0])])
+
+
+def html_vid(vid, interval=100):
+    """
+        Use in jupyter:
+        anim = html_vid(q_vid)
+        HTML(anim.to_html5_video())
+    """
+    fig = gputils.plt.figure()
+    fig.tight_layout()
+    im = gputils.plt.imshow(vid[0, :, :, :])
+    gputils.plt.axis('off')
+    gputils.plt.close()  # this is required to not display the generated image
+
+    def init():
+        im.set_data(vid[0, :, :, :])
+
+    def animate(i):
+        im.set_data(vid[i, :, :, :])
+        return im
+
+    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=vid.shape[0], interval=interval)
+    return anim
+
+
+def write_video(vid, video_path, fps: int=15, **kwargs):
+    torchvision.io.write_video(video_path, vid, fps, **kwargs)
 
 # def save_gif(frames_pil, filepath, duration=100, loop=1):
 #     """Images don't look good"""
