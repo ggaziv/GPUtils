@@ -622,6 +622,13 @@ def numpify(x):
         return x
 
 
+def torchify(x):
+    if isinstance(x, np.ndarray):
+        return torch.from_numpy(x)
+    else:
+        return x
+    
+    
 def make_weights_for_balanced_classes(dset, nclasses):
     """Balanced Sampling between classes with torchvision DataLoader
     https://discuss.pytorch.org/t/balanced-sampling-between-classes-with-torchvision-dataloader/2703   
