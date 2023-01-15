@@ -8,6 +8,10 @@ These are commonly used tools or functions that make up my standard coding desk.
 
 - utils_torch: Utility functions that I regularly use for PyTorch programing.
 
+- image_utils: General useful utility functions for image processing.
+
+- plot_utils: General useful utility functions for plotting/visualization.
+
 - dataset_dumper: Utility that dumps a PyTorch dataset to disk (instead of holding it in RAM).
 
 - cluster_batch_comp: Package for cluster parallel computing of tasks.
