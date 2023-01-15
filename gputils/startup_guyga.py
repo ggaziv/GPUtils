@@ -56,6 +56,8 @@ from PIL import Image
 # import nibabel as nib
 import zipfile
 import argparse
+from argparse import Namespace
+
 warnings.resetwarnings()
 warnings.simplefilter("ignore", ResourceWarning)
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")

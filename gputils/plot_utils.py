@@ -81,7 +81,14 @@ def add_unity_ref_planes(ax, alpha=0.2):
         ax.plot_surface(*[d[ax_name1] for ax_name1 in deq], alpha=alpha)
         deq.rotate(1)
         
-
+        
+def make_legend(g, bbox_to_anchor=(1.05, .6)):
+    # leg = gputils.plt.legend(loc='center left', bbox_to_anchor=bbox_to_anchor, frameon=False)
+    g.get_legend().set_bbox_to_anchor(bbox_to_anchor)
+    g.get_legend().set_title(None)
+    g.get_legend().get_frame().set_linewidth(0.0)
+        
+        
 class ErrorBarred():
     def __init__(self, plotter=sns.scatterplot):
         self.plotter = plotter
@@ -105,10 +112,10 @@ class ErrorBarred():
         g = self.plotter(data=data1, x=x, y=y, hue=hue, palette=palette, **kwargs)
         
         if boot_var is not None:
-            err_list = self.compute_errorbars(data, x, y, columns_group, 
-                                              estimator, errorbar, n_boot, 
-                                              post_agg_fn_x, post_agg_fn_y, 
-                                              seed)
+            err_list = self.__class__.compute_errorbars(data, x, y, columns_group, 
+                                                        estimator, errorbar, n_boot, 
+                                                        post_agg_fn_x, post_agg_fn_y, 
+                                                        seed)
             x_vals, y_vals, x_errs_min, x_errs_max, y_errs_min, y_errs_max = list(zip(*[(err.x.val, err.y.val, 
                                                                                     err.x.err_min, err.x.err_max, 
                                                                                     err.y.err_min, err.y.err_max) for err in err_list]))
@@ -124,7 +131,8 @@ class ErrorBarred():
                        errorevery=errorevery)
         return g
     
-    def compute_errorbars(self, data, x, y, columns_group, 
+    @staticmethod
+    def compute_errorbars(data, x, y, columns_group, 
                           estimator, errorbar, n_boot, 
                           post_agg_fn_x, post_agg_fn_y, 
                           seed):
