@@ -13,8 +13,8 @@ __author__ = "Guy Gaziv"
 
 # print('>> Running startup script.')
 from pprint import pprint
-import sys, os, copy, math, json
-from dotmap import DotMap
+import sys, os, copy, math, json, platform
+# from dotmap import DotMap
 from os.path import join as pjoin, exists as pexists, basename, isfile, dirname
 from datetime import datetime
 from numpy import stack, vstack, dstack, hstack, array, load, save, inf, squeeze, mean, median, std, linspace, prod, arange, \
@@ -57,6 +57,8 @@ from PIL import Image
 import zipfile
 import argparse
 from argparse import Namespace
+from dataclasses import dataclass, field
+import pyrallis
 
 warnings.resetwarnings()
 warnings.simplefilter("ignore", ResourceWarning)
