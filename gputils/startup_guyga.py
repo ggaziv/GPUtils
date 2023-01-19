@@ -47,7 +47,7 @@ from collections import OrderedDict
 from natsort import natsorted, index_natsorted
 from importlib import reload
 import shutil, pickle
-import itertools
+import itertools, functools
 from itertools import chain, permutations, combinations, product
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
