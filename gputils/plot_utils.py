@@ -84,9 +84,13 @@ def add_unity_ref_planes(ax, alpha=0.2):
         
 def make_legend(g, bbox_to_anchor=(1.05, .6), legend_title=None):
     # leg = gputils.plt.legend(loc='center left', bbox_to_anchor=bbox_to_anchor, frameon=False)
-    g.get_legend().set_bbox_to_anchor(bbox_to_anchor)
-    g.get_legend().set_title(legend_title)
-    g.get_legend().get_frame().set_linewidth(0.0)
+    if isinstance(g, sns.FacetGrid):
+        leg = g._legend
+    else:
+        leg = g.get_legend()
+    leg.set_bbox_to_anchor(bbox_to_anchor)
+    leg.set_title(legend_title)
+    leg.get_frame().set_linewidth(0.0)
         
         
 class ErrorBarred():
