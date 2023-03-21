@@ -92,7 +92,15 @@ def make_legend(g, bbox_to_anchor=(1.05, .6), legend_title=None):
     leg.set_title(legend_title)
     leg.get_frame().set_linewidth(0.0)
         
-        
+
+def add_text(text, ax=None, x=0.05, y=0.95, fontsize=14, alpha=0.5, ha='left', va='top'):
+    if ax is None:
+        ax = gputils.plt.gca()
+    ax.text(x, y, text, transform=ax.transAxes, fontsize=fontsize, 
+            horizontalalignment=ha, verticalalignment=va, 
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=alpha))
+    
+    
 class ErrorBarred():
     def __init__(self, plotter=sns.scatterplot):
         self.plotter = plotter
