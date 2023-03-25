@@ -22,7 +22,8 @@ def make_montage(imgs, n_col=None):
     return build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]
 
 
-def get_images(images_paths, resize_dim=None, n_threads=20, use_pil=False, force_rgb=False, reported=False):
+def get_images(images_paths, resize_dim=None, n_threads=20, use_pil=False, force_rgb=False, reported=False, 
+               return_list=False):
     """Return the list of frames given by list of absolute paths.
     """
     if resize_dim is None:
@@ -47,7 +48,10 @@ def get_images(images_paths, resize_dim=None, n_threads=20, use_pil=False, force
         MyPool = gputils.Pool
     with MyPool(n_threads) as pool:
         res_list = pool.map(reader_fn, images_paths)
-    return np.array(res_list)
+    if return_list:
+        return res_list
+    else:
+        return np.array(res_list)
 
 
 def color_framed(img_rgb, pad_size, rgb):
