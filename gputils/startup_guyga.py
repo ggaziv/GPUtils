@@ -25,9 +25,9 @@ from gputils.utils1 import *
 import random, time
 from numpy.random import randint, randn, random_sample
 from termcolor import cprint
-cprint1 = lambda s: cprint(s, 'cyan', attrs=['bold'])
-cprintc = lambda s: cprint(s, 'cyan')
-cprintm = lambda s: cprint(s, 'magenta')
+cprint1 = lambda s, *args, **kwargs: cprint(s, 'cyan', attrs=['bold'], *args, **kwargs)
+cprintc = lambda s, *args, **kwargs: cprint(s, 'cyan', *args, **kwargs)
+cprintm = lambda s, *args, **kwargs: cprint(s, 'magenta', *args, **kwargs)
 from sys import getsizeof
 import scipy
 from scipy import io as sio
