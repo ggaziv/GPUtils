@@ -300,7 +300,11 @@ def my_parse(ref_str, s, split_str='_'):
     return ref_str_split[ref_str_split.index(s) + 1]
 
 def extract_from_string(s, ref_str, regextype='\d+'):
-    """Supports recursion"""
+    """Supports recursion
+    E.g., 
+        >>> extract_from_string('meta_job27.nc', 'job')
+        27
+    """
     if len(ref_str) == 0:
         return []
     if isinstance(ref_str, list):
