@@ -12,14 +12,21 @@ from PIL import Image, ImageFont, ImageDraw
 from matplotlib import animation
 import torchvision.io
 
-
-def make_montage(imgs, n_col=None):
+    
+def make_montage(imgs_or_image_paths, n_col=None, return_pil=False):
+    if isinstance(imgs_or_image_paths[0], np.ndarray):
+        imgs = imgs_or_image_paths
+    else:
+        imgs = get_images(imgs_or_image_paths, use_pil=True, force_rgb=True)    
     N = len(imgs)
     im_res = imgs[0].shape[0]
     if n_col is None:
         n_col = int(np.sqrt(N) * 4 // 3)
     n_col = min(n_col, N)
-    return build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]
+    image_montage = build_montages(imgs, (im_res, im_res), (n_col, N // n_col))[0]
+    if return_pil:
+        return Image.fromarray(image_montage)
+    return image_montage
 
 
 def get_images(images_paths, resize_dim=None, n_threads=20, use_pil=False, force_rgb=False, reported=False, 
