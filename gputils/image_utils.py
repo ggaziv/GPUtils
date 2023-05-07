@@ -13,11 +13,11 @@ from matplotlib import animation
 import torchvision.io
 
     
-def make_montage(imgs_or_image_paths, n_col=None, return_pil=False):
+def make_montage(imgs_or_image_paths, n_col=None, return_pil=False, **get_images_kws):
     if isinstance(imgs_or_image_paths[0], np.ndarray):
         imgs = imgs_or_image_paths
     else:
-        imgs = get_images(imgs_or_image_paths, use_pil=True, force_rgb=True)    
+        imgs = get_images(imgs_or_image_paths, use_pil=True, force_rgb=True, **get_images_kws)    
     N = len(imgs)
     im_res = imgs[0].shape[0]
     if n_col is None:
