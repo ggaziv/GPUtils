@@ -11,6 +11,7 @@ import numpy as np
 from PIL import Image, ImageFont, ImageDraw
 from matplotlib import animation
 import torchvision.io
+from scipy import signal as sig
 
     
 def make_montage(imgs_or_image_paths, n_col=None, return_pil=False, **get_images_kws):
@@ -155,3 +156,13 @@ def write_video(vid, video_path, fps: int=15, **kwargs):
 #     frames = [gputils.Image.fromarray(arr) for arr in frames_pil]
 #     frames[0].save(filepath, format="GIF", append_images=frames, 
 #                    save_all=True, duration=duration, loop=loop)
+
+
+def butter_lowpass(cutoff, fs, order=5):
+    return sig.butter(order, cutoff, fs=fs, btype='low', analog=False)
+
+
+def butter_lowpass_filter(data, cutoff, fs, order=6):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = sig.lfilter(b, a, data)
+    return y
