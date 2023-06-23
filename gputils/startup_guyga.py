@@ -26,6 +26,9 @@ import random, time
 from numpy.random import randint, randn, random_sample
 from termcolor import cprint
 cprint1 = lambda s, *args, **kwargs: cprint(s, 'cyan', attrs=['bold'], *args, **kwargs)
+cprintrb = lambda s, *args, **kwargs: cprint(s, 'red', attrs=['bold'], *args, **kwargs)
+cprintkb = lambda s, *args, **kwargs: cprint(s, attrs=['bold'], *args, **kwargs)
+cprintbb = lambda s, *args, **kwargs: cprint(s, 'blue', attrs=['bold'], *args, **kwargs)
 cprintc = lambda s, *args, **kwargs: cprint(s, 'cyan', *args, **kwargs)
 cprintm = lambda s, *args, **kwargs: cprint(s, 'magenta', *args, **kwargs)
 from sys import getsizeof
