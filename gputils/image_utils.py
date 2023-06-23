@@ -95,7 +95,21 @@ class FrameLabeler():
         draw = ImageDraw.Draw(img_pil)
         draw.text(self.xy, label , self.color, font=self.font)
         return img_pil
+
     
+def add_header(imgs, lbl, margin=40, fontsize=14):
+    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", fontsize)
+    img_list = []
+    for im in imgs:
+        im_pad = np.vstack([np.full_like(im, 255, dtype='uint8')[:margin], im])
+        img_pil = pilify(im_pad)
+        draw = ImageDraw.Draw(img_pil)
+        _, _, w, h = draw.textbbox((0, 0), lbl, font=font)
+        # draw.text(((W-w)/2, (H-h)/2), lbl, font=font, fill=fontColor)
+        draw.text(((img_pil.size[0]-w)/2, (margin-h)/2), lbl , (0, 0 ,0), font=font)
+        img_list.append(array(img_pil))
+    return img_list
+
 
 def interp_images(im1, im2, alpha=None):
     if alpha is None:
