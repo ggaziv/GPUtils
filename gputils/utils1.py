@@ -299,7 +299,7 @@ def my_parse(ref_str, s, split_str='_'):
     ref_str_split = ref_str.split(split_str)
     return ref_str_split[ref_str_split.index(s) + 1]
 
-def extract_from_string(s, ref_str, regextype='\d+'):
+def extract_from_string(s, ref_str, regextype='\d+', caster=int):
     """Supports recursion
     E.g., 
         >>> extract_from_string('meta_job27.nc', 'job')
@@ -308,9 +308,9 @@ def extract_from_string(s, ref_str, regextype='\d+'):
     if len(ref_str) == 0:
         return []
     if isinstance(ref_str, list):
-        return [extract_from_string(s, ref_str[0], regextype)] + extract_from_string(s, ref_str[1:], regextype)
+        return [extract_from_string(s, ref_str[0], regextype, caster)] + extract_from_string(s, ref_str[1:], regextype, caster)
     else:
-        return int(re.findall(r'{}{}'.format(ref_str,regextype) , s)[0].replace(ref_str, ''))
+        return caster(re.findall(r'{}{}'.format(ref_str,regextype) , s)[0].replace(ref_str, ''))
 
 def easystack(l, stacking_func=np.stack):
     l = [x for x in l if x is not None]
