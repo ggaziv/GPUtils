@@ -97,17 +97,22 @@ class FrameLabeler():
         return img_pil
 
     
-def add_header(imgs, lbl, margin=40, fontsize=14):
+def add_header(imgs, labels, margin=40, side='top', fontsize=14):
+    if not isinstance(labels, list):
+        labels = [labels] * len(imgs)
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", fontsize)
     img_list = []
-    for im in imgs:
-        im_pad = np.vstack([np.full_like(im, 255, dtype='uint8')[:margin], im])
-        img_pil = pilify(im_pad)
-        draw = ImageDraw.Draw(img_pil)
+    for im, lbl in zip(imgs, labels):
+        im_margin_pil = pilify(np.full_like(im, 255, dtype='uint8')[:margin])
+        draw = ImageDraw.Draw(im_margin_pil)
         _, _, w, h = draw.textbbox((0, 0), lbl, font=font)
-        # draw.text(((W-w)/2, (H-h)/2), lbl, font=font, fill=fontColor)
-        draw.text(((img_pil.size[0]-w)/2, (margin-h)/2), lbl , (0, 0 ,0), font=font)
-        img_list.append(array(img_pil))
+        draw.text(((im_margin_pil.size[0]-w)/2, (margin-h)/2), lbl , (0, 0 ,0), font=font)
+        im_margin = np.array(im_margin_pil)
+        if side == 'top':
+            im = np.vstack([im_margin, im])
+        elif side == 'bottom':
+            im = np.vstack([im, im_margin])
+        img_list.append(np.array(im))
     return img_list
 
 
