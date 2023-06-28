@@ -75,6 +75,19 @@ def add_horizontal_ref_line(y, label=None, ax=None, color='black', ha=.5, fontsi
                 backgroundcolor='w')
     
     
+def add_vertical_ref_line(x, label=None, ax=None, color='black', va=.5, fontsize=24):
+    if ax is None:
+        ax = gputils.plt.gca()
+    y_min_max = ax.get_ylim()
+    ax.plot((x, x), y_min_max, '--', color=color, alpha=.3)
+    if label is None:
+        label = f"{x}"
+    ax.annotate(label, (x, y_min_max[0] + np.diff(y_min_max) * va), 
+                textcoords="offset points", fontsize=fontsize,
+                xytext=(0,-5), ha='center', 
+                backgroundcolor='w')
+    
+    
 def add_unity_ref_planes(ax, alpha=0.2):
     limits_dict = {ax_name: getattr(ax, f'get_{ax_name}lim3d')() for ax_name in ['x', 'y', 'z']}
     lim_max = max(lim[1] for lim in limits_dict.values())
