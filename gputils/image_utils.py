@@ -126,10 +126,10 @@ def interp_images(im1, im2, alpha=None):
         return interpolated.type(im1.dtype)
 
 
-def get_video(video_path, resize_dim=None):
+def get_video(video_path, resize_dim=None, reader_fn=skvideo.io.vread):
     """Return array of NxHxWx3 of frames given by the video path.
     """
-    vid = skvideo.io.vread(video_path)
+    vid = reader_fn(video_path)
     if resize_dim is None:
         return vid
     else:
