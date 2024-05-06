@@ -135,7 +135,7 @@ class ErrorBarred():
                  boot_var: str=None, estimator='mean', 
                  errorbar=('ci', 95), n_boot=100, 
                  post_agg_fn_x=None, post_agg_fn_y=None,
-                 elinewidth=2, ecolor='k',capsize=2,
+                 elinewidth=2, ecolor='k',capsize=2, capthick=None,
                  err_alpha=None, errorevery=1, seed=None, 
                  n_threads=None, palette=None, **kwargs):
         if palette is None:
@@ -164,6 +164,7 @@ class ErrorBarred():
                        fmt=' ',
                        elinewidth=elinewidth,
                        capsize=capsize,
+                       capthick=capthick,
                        ecolor=ecolor,
                        alpha=err_alpha,
                        errorevery=errorevery)
