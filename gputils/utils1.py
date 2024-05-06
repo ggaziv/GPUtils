@@ -399,3 +399,18 @@ def unique_keeporder(seq):
 def fill_first(named_tup: namedtuple, item_list, fill_val=None):
     n_missing = len(named_tup._fields) - len(item_list)
     return named_tup(*item_list, *([fill_val] * n_missing))
+
+def get_groupped(ds, keys):
+    """Multi-variable grouping for xarrays
+    """
+    if isinstance(keys, list) and len(keys) > 1:
+        k = keys[0]
+        l = []
+        for g, ds_agg in ds.groupby(k):
+            for g1, ds_agg1 in get_groupped(ds_agg, keys[1:]):
+                l.append(((g,) + g1, ds_agg1))
+        return l
+    else:
+        k = keys[0] if isinstance(keys, list) else keys
+        return [((g,), ds_agg) for g, ds_agg in ds.groupby(k)]
+    
