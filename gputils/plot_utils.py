@@ -184,6 +184,8 @@ class ErrorBarred():
         groupped = data.groupby(columns_group)
         value_tup = namedtuple('Value', ['val', 'err_min', 'err_max'])
         def extract_res(g, var, post_agg_fn): 
+            if len(g) == 1:
+                g = g[0]
             df_agg = groupped.get_group(g)
             df_agg.dropna(subset=var)
             if len(df_agg) == 0:
