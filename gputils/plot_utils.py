@@ -138,12 +138,14 @@ class ErrorBarred():
                  elinewidth=2, ecolor='k',capsize=2, capthick=None,
                  err_alpha=None, errorevery=1, seed=None, 
                  n_threads=None, palette=None, **kwargs):
+        # data = data[[x, y, hue, boot_var]].copy()
         if palette is None:
             palette = sns.color_palette('bright', len(data.reset_index()[hue].unique()))
         
         cols_exclude = [x, y, boot_var]
         columns_group = [col_name for col_name in data.columns if col_name not in cols_exclude]
-        data1 = data.groupby(columns_group).mean().reset_index().copy()
+        data1 = data.groupby(columns_group).agg(estimator).reset_index().copy()
+        # data1 = data[[x, y, hue]].groupby(hue).mean().reset_index().copy()
         for col_name, post_agg_fn in zip((x,y), (post_agg_fn_x, post_agg_fn_y)):
             if post_agg_fn is not None:
                 data1[col_name] = post_agg_fn(data1[col_name])
