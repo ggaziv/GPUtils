@@ -23,6 +23,7 @@ from tqdm import tqdm
 from collections import namedtuple
 import re
 from contextlib import contextmanager
+import tempfile
 identity = lambda x: x
 
 __author__ = "Guy Gaziv"
@@ -413,4 +414,11 @@ def get_groupped(ds, keys):
     else:
         k = keys[0] if isinstance(keys, list) else keys
         return [((g,), ds_agg) for g, ds_agg in ds.groupby(k)]
+    
+def create_temp_copy(src_folder):
+    # Create a temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_copy_folder = os.path.join(temp_dir, os.path.basename(src_folder))
+        shutil.copytree(src_folder, temp_copy_folder)
+        return temp_copy_folder
     
