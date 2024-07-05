@@ -18,6 +18,7 @@ import torchvision.utils as torchvis_utils
 from torch.utils.data import Dataset, DataLoader
 import multiprocessing as mp
 import skimage.io as skio
+from PIL import Image
 
 identity = lambda x: x
 
@@ -507,6 +508,7 @@ class ImagepathsDataset(torch.utils.data.Dataset):
     
     def __getitem__(self, index):
         img = skio.imread(self.image_paths[index])
+        # img = np.array(Image.open(self.image_paths[index]).convert('RGB'))
         return self.transform(img)
     
     def __len__(self):
@@ -528,14 +530,18 @@ class ImageDataset(torch.utils.data.Dataset):
  
  
 @torch.no_grad()
-def get_activations_from_images_batched(net, images, batch_size=100, n_threads=16, transform_norm=identity,
+def get_activations_from_images_batched(net, images, batch_size=100, n_threads=16, transform=None, transform_norm=identity,
                             dataloader_impl=True, device=torch.device('cuda:0'), do_tqdm=True):
     """Get activations for images. Compute in batches.
     """
     acts_list = []
     
     if dataloader_impl:
-        my_transform = lambda img: transform_norm(torch.tensor(img, requires_grad=False).permute(2, 0, 1) / 255.)
+        if transform is None:
+            my_transform = lambda img: transform_norm(torch.tensor(img, requires_grad=False).permute(2, 0, 1) / 255.)
+        else:
+            my_transform = transform
+            
         dset = ImageDataset(images, my_transform)           
         it = DataLoader(dset, batch_size=batch_size, pin_memory=True, num_workers=n_threads)
         if do_tqdm: 
@@ -552,14 +558,17 @@ def get_activations_from_images_batched(net, images, batch_size=100, n_threads=1
 
 
 @torch.no_grad()
-def get_activations_from_paths_batched(net, image_paths, batch_size=100, n_threads=16, transform_norm=identity,
+def get_activations_from_paths_batched(net, image_paths, batch_size=100, n_threads=16, transform=None, transform_norm=identity,
                             dataloader_impl=True, device=torch.device('cuda:0'), do_tqdm=True):
     """Get activations for images. Compute in batches.
     """
     acts_list = []
     
     if dataloader_impl:
-        my_transform = lambda img: transform_norm(torch.tensor(img, requires_grad=False).permute(2, 0, 1) / 255.)
+        if transform is None:
+            my_transform = lambda img: transform_norm(torch.tensor(img, requires_grad=False).permute(2, 0, 1) / 255.)
+        else:
+            my_transform = transform
         dset = ImagepathsDataset(image_paths, my_transform)           
         it = DataLoader(dset, batch_size=batch_size, pin_memory=True, num_workers=n_threads)
         if do_tqdm: 
@@ -577,17 +586,17 @@ def get_activations_from_paths_batched(net, image_paths, batch_size=100, n_threa
     return np.vstack(acts_list)
 
        
-def get_activations_batched(net, images_or_paths, batch_size=100, n_threads=16, transform_norm=identity,
+def get_activations_batched(net, images_or_paths, batch_size=100, n_threads=16, transform=None, transform_norm=identity,
                             dataloader_impl=True, device=torch.device('cuda:0'), do_tqdm=True):
     """Get activations for images. Compute in batches.
     """
     if isinstance(images_or_paths, np.ndarray):
         return get_activations_from_images_batched(net, images_or_paths, batch_size, 
-                                                   n_threads, transform_norm, dataloader_impl, 
+                                                   n_threads, transform, transform_norm, dataloader_impl, 
                                                    device, do_tqdm=do_tqdm)
     else:
         return get_activations_from_paths_batched(net, images_or_paths, batch_size, 
-                                                  n_threads, transform_norm, dataloader_impl, 
+                                                  n_threads, transform, transform_norm, dataloader_impl, 
                                                   device, do_tqdm=do_tqdm)
 
 
