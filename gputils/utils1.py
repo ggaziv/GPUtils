@@ -421,4 +421,3 @@ def create_temp_copy(src_folder):
         temp_copy_folder = os.path.join(temp_dir, os.path.basename(src_folder))
         shutil.copytree(src_folder, temp_copy_folder)
         return temp_copy_folder
-    
