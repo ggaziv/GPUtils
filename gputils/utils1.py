@@ -311,7 +311,7 @@ def extract_from_string(s, ref_str, regextype='\d+', caster=int):
     if isinstance(ref_str, list):
         return [extract_from_string(s, ref_str[0], regextype, caster)] + extract_from_string(s, ref_str[1:], regextype, caster)
     else:
-        return caster(re.findall(r'{}{}'.format(ref_str,regextype) , s)[0].replace(ref_str, ''))
+        return caster(re.findall(r'{}{}'.format(ref_str, regextype) , s)[0].replace(ref_str, ''))
 
 def easystack(l, stacking_func=np.stack):
     l = [x for x in l if x is not None]
