@@ -62,11 +62,11 @@ def add_unity_ref_line(ax=None, inverse=False, alpha=.3):
     ax.plot((lim1, lim2), ((1 - 2 * inverse) * lim1, (1 - 2 * inverse) * lim2), '-k', alpha=alpha)
     
 
-def add_horizontal_ref_line(y, label=None, ax=None, color='black', ha=.5, fontsize=24):
+def add_horizontal_ref_line(y, label=None, ax=None, color='black', ha=.5, fontsize=24, line_format='--'):
     if ax is None:
         ax = gputils.plt.gca()
     x_min_max = ax.get_xlim()
-    ax.plot(x_min_max, (y, y), '--', color=color, alpha=.3)
+    ax.plot(x_min_max, (y, y), line_format, color=color, alpha=.3)
     if label is None:
         label = f"{y}"
     ax.annotate(label, (x_min_max[0] + np.diff(x_min_max) * ha, y), 
